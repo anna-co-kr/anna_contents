@@ -303,16 +303,24 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
   - 실제 소요: 약 1시간
   - 의존: Task 011
 
-- [ ] 대기 **Task 013: 레퍼런스 상세 페이지**
+- [x] 완료 **Task 013: 레퍼런스 상세 페이지**
   - 목표: `/library/[id]` 상세 페이지 — 원본 이미지 + 토큰 편집 + 태그 편집 + 스니펫 CRUD + 삭제
   - 참조 PRD 기능: F002 (PRD 136-146)
   - 완료 기준:
-    - 원본 이미지 전체 크기 표시
-    - 6차원 토큰 값 인라인 편집 가능 (편집 시 `reference_tokens` 업데이트)
-    - 점수/태그 편집
-    - 프롬프트 스니펫 목록 (추가/삭제/copy prompt 각각)
-    - 레퍼런스 삭제 버튼 (확인 다이얼로그 포함, cascade 삭제)
-  - 예상 소요: 4시간
+    - [x] 원본 이미지 `max-h-[80vh] object-contain`, Server Component에서 signed URL 발급
+    - [x] 4 섹션 우측 레이아웃(점수 / 6차원 토큰 / 태그 / 스니펫 카운트 + 미리보기 3개)
+    - [x] **6차원 토큰** — `ManualTokensDialog` 재사용(기본 trigger 버튼, 서버-클라이언트 hydration 안전)
+    - [x] **점수** — `ReferenceEditDialog` 재사용(dot slider + 저장)
+    - [x] **태그** — `TagPopover` 재사용(상세 페이지에선 항상 노출)
+    - [x] **스니펫** — 편집 Dialog에서 전체 CRUD·copy 지원 + 상세 페이지 상단 미리보기 3개 노출
+    - [x] **삭제** — `DeleteReferenceButton` + shadcn AlertDialog confirm, cascade 삭제는 DB FK로 처리, 성공 시 toast + `/library` 리다이렉트
+    - [x] hydration-safe 날짜 포맷 `formatUploadedAt` (UTC ISO-like) — ko-KR toLocaleString 폐기
+    - [x] `getReferenceDetail` + `deleteReference` Server Action 추가
+  - 테스트 (`task-013.spec.ts` 3/3 통과):
+    - [x] 카드 클릭 → 상세 4 섹션 노출
+    - [x] 삭제 AlertDialog → cascade 삭제 → /library 리다이렉트 + 카드 사라짐
+    - [x] 존재 안 하는 id → notFound/에러 노출
+  - 실제 소요: 약 1.5시간
   - 의존: Task 011, 012
 
 ## Phase 2: Week 2 (D8-D14) — F003 완성 + D10 게이트 + D13 출시
@@ -693,7 +701,7 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
 ## 진행 상태 요약
 
 - **Phase 0 (선행)**: 0/3 Task 완료
-- **Phase 1 (Week 1, D1-D7)**: 11/13 Task 완료 (Task 001~008 ✓ · Task 009 B 재설계로 Task 008에 흡수 삭제 · Task 010~012 ✓) — **V1 코어 F001 완성 + F002 copy & 스마트 매칭까지 완성**
+- **Phase 1 (Week 1, D1-D7)**: 12/13 Task 완료 (Task 001~008 ✓ · Task 009 B 재설계로 Task 008에 흡수 삭제 · Task 010~013 ✓) — **F001 + F002 전체 UX 완성**. 남은 것은 Task 008-1 preview 배포 리허설뿐.
 - **Phase 2 (Week 2, D8-D14)**: 0/9 Task 완료 (Task 016-1 ops.md 추가, D10 게이트 결과에 따라 Task 수 변동)
 - **Phase 3 (Week 3, D15-D21)**: 0/11 Task 완료 (Task 030-1 백업 스크립트 추가, V1.5 기능 선택에 따라 변동)
 

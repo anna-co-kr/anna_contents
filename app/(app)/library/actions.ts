@@ -687,6 +687,112 @@ export type PromptSnippetData = {
   createdAt: string;
 };
 
+// --- 상세 페이지 조회 + 삭제 (Task 013) -----------------------------------
+
+export type ReferenceDetailData = {
+  id: string;
+  sourceUrl: string | null;
+  thumbnailUrl: string | null;
+  signedThumbnailUrl: string | null;
+  favoriteScore: number | null;
+  notes: string | null;
+  uploadedAt: string;
+  tokens: Token | null;
+  tags: { id: string; label: string; kind: TagKind }[];
+};
+
+export async function getReferenceDetail(
+  referenceId: string,
+): Promise<ActionResult<{ detail: ReferenceDetailData }>> {
+  if (
+    typeof referenceId !== "string" ||
+    !/^[0-9a-f-]{36}$/i.test(referenceId)
+  ) {
+    return { ok: false, error: "잘못된 referenceId" };
+  }
+  const ctx = await requireUserId();
+  if (!ctx.ok) return ctx;
+
+  const { data, error } = await ctx.supabase
+    .from("references")
+    .select(
+      `
+      id,
+      source_url,
+      thumbnail_url,
+      favorite_score,
+      notes,
+      uploaded_at,
+      reference_tokens(tokens, is_active),
+      tags(id, tag, tag_kind)
+      `,
+    )
+    .eq("id", referenceId)
+    .eq("user_id", ctx.userId)
+    .maybeSingle();
+
+  if (error) return { ok: false, error: `상세 조회 실패: ${error.message}` };
+  if (!data) return { ok: false, error: "레퍼런스를 찾을 수 없습니다" };
+
+  const activeTokenRow = (data.reference_tokens ?? []).find(
+    (rt: { is_active: boolean; tokens: unknown }) => rt.is_active,
+  );
+  const tokens = activeTokenRow
+    ? normalizeTokens(activeTokenRow.tokens)
+    : null;
+  const signed = data.thumbnail_url
+    ? await getSignedThumbnailUrl(data.thumbnail_url)
+    : null;
+
+  return {
+    ok: true,
+    detail: {
+      id: data.id,
+      sourceUrl: data.source_url,
+      thumbnailUrl: data.thumbnail_url,
+      signedThumbnailUrl: signed,
+      favoriteScore: data.favorite_score,
+      notes: data.notes,
+      uploadedAt: data.uploaded_at,
+      tokens,
+      tags: (data.tags ?? []).map(
+        (t: { id: string; tag: string; tag_kind: TagKind }) => ({
+          id: t.id,
+          label: t.tag,
+          kind: t.tag_kind,
+        }),
+      ),
+    },
+  };
+}
+
+const deleteReferenceInputSchema = z.object({
+  referenceId: z.string().uuid(),
+});
+
+export async function deleteReference(
+  raw: unknown,
+): Promise<SimpleActionResult> {
+  const parsed = deleteReferenceInputSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "잘못된 입력" };
+  }
+  const ctx = await requireUserId();
+  if (!ctx.ok) return ctx;
+
+  // ON DELETE CASCADE로 reference_tokens·tags·prompts 자동 삭제 (migration 0001)
+  const { error } = await ctx.supabase
+    .from("references")
+    .delete()
+    .eq("id", parsed.data.referenceId)
+    .eq("user_id", ctx.userId);
+
+  if (error) return { ok: false, error: `레퍼런스 삭제 실패: ${error.message}` };
+
+  revalidatePath("/library");
+  return { ok: true };
+}
+
 export async function listReferenceSnippets(
   referenceId: string,
 ): Promise<ActionResult<{ snippets: PromptSnippetData[] }>> {
