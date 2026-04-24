@@ -1,6 +1,6 @@
 # Prompt Studio v0.5 개발 로드맵 (도구 트랙 전용)
 
-안나의 **낮은 프롬프트 활용 능력을 Claude Code CLI(MAX 구독)가 보좌**하도록 제품이 워크플로우를 정돈하는 1인용 컴패니언 도구. 외부 AI API 호출 없이 제품은 (1) Claude Code에 붙여넣을 요청 프롬프트 조립, (2) 응답 Zod 검증·저장, (3) 레퍼런스·페어·태그 관리를 담당. 프롬프트 품질 uplift → 이미지 추출 성공률 상승 → 이터레이션 감소 → 포스트당 2시간 병목 해소의 3단 인과로 연결. **운영비 $0** (Supabase/Vercel 무료 티어만 사용).
+안나의 **낮은 프롬프트 활용 능력을 Claude Code CLI(MAX 구독)가 보좌**하도록 제품이 워크플로우를 정돈하는 1인용 컴패니언 도구. 외부 AI API 호출 없이 제품은 (1) Claude Code에 붙여넣을 요청 프롬프트 조립, (2) 응답 Zod 검증·저장, (3) 레퍼런스·페어·태그 관리를 담당. **지원 도구 3종**: Midjourney · Nano Banana Pro · Higgsfield (빈도: NBP > Higgsfield > MJ). **6 조합 (tool × language, en/ko) 전부 자유 선택**. 프롬프트 품질 uplift → 이미지·영상 추출 성공률 상승 → 이터레이션 감소 → 포스트당 2시간 병목 해소의 3단 인과. **운영비 $0**.
 
 > **이 문서의 책임 경계**: 본 ROADMAP은 **Prompt Studio v0.5 도구 트랙 전용**입니다. 영상 트랙(마스코트 3-5안 탐색, 캐릭터 일관성 전략 테스트, BGM 라이선스, 영상 편집, 크리에이티브 체크, 영상 내부 검수)은 `PROMPT_STUDIO_DESIGN.md` §9.4 3주 스프린트 표를 source of truth로 참조하세요. 매일 아침 두 문서를 함께 열고 해당 날짜의 도구 Task + 영상 트랙 작업을 각각 확인합니다.
 
@@ -9,9 +9,9 @@
 Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴 레버리지 도구로, 다음을 제공합니다:
 
 - **레퍼런스 축적 + Claude Code 분석 연동 (F001)**: URL/이미지 드롭 → 제품이 Claude Code용 6차원 분석 요청 프롬프트를 클립보드에 복사 → 안나가 Claude Code에서 분석 → 응답을 제품 paste 폼에 붙여넣으면 Zod 검증·저장 (영어 고정). 수동 6필드 입력 폴백
-- **태그·프롬프트 스니펫 + copy prompt (F002)**: 점수·태그·프롬프트 스니펫을 축적하고 클립보드 복사로 **MJ(영어) 또는 NBP(한국어)**에 즉시 재사용. 스니펫마다 `tool`·`language` 메타 필수
-- **프롬프트 페어 로그 (F003)**: MJ/NBP에서 실행한 프롬프트와 결과 이미지를 pair로 저장, **프롬프트 자체 만족도(`self_rating`, 1차 지표) + 이미지 결과 만족도(`satisfaction`) 분리 측정**, 만족 결과 마킹으로 성공 패턴 축적
-- **V1.5 확장 (F004~F006)**: 토큰 diff(클라이언트 jsdiff), 태그·키워드 검색(ILIKE, 외부 임베딩 API 없음), 리믹스 요청 프롬프트 생성기(클라이언트 템플릿 엔진, API 호출 0) — Week 3 추가
+- **태그·프롬프트 스니펫 + copy prompt (F002)**: 점수·태그·프롬프트 스니펫을 축적하고 클립보드 복사로 **MJ · NBP · Higgsfield** 중 선택 도구에 즉시 재사용. 스니펫마다 `tool`(3종)·`language`(2종) 메타 필수, 6 조합 전부 UI에서 자유 선택 (기본값 연동 MJ→en, NBP→ko, Higgsfield→en, 수동 override 허용)
+- **프롬프트 페어 로그 (F003)**: MJ · NBP · Higgsfield에서 실행한 프롬프트와 결과 이미지/영상 프레임을 pair로 저장, **프롬프트 자체 만족도(`self_rating`, 1차 지표) + 결과 만족도(`satisfaction`) 분리 측정**, 만족 결과 마킹으로 성공 패턴 축적
+- **V1.5 확장 (F004~F006)**: 토큰 diff(클라이언트 jsdiff), 태그·키워드 검색(ILIKE, 외부 임베딩 API 없음), 리믹스 요청 프롬프트 생성기(**6 조합 템플릿 엔진** — MJ-en/ko, NBP-en/ko, Higgsfield-en/ko, 클라이언트 전용, API 호출 0) — Week 3 추가
 
 ## 크리티컬 원칙 (매일 상기)
 
@@ -124,8 +124,8 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
     - `references.source_url`에 partial unique index: `CREATE UNIQUE INDEX references_source_url_unique ON references (user_id, source_url) WHERE source_url IS NOT NULL` (중복 URL 드롭 방지, 이미지 업로드는 source_url NULL 허용) — **ARCH-1 CEO 리뷰 반영**
     - `pairs(user_id, session_id, created_at)` 복합 인덱스 (iteration count 쿼리 최적화) — **ENG-5 autoplan 반영**
     - **`prompts` 테이블에 도구·언어·품질 3필드 추가** (2026-04-24 실사용 반영):
-      - `tool prompt_tool NOT NULL` — enum 타입 `prompt_tool`: (`midjourney`, `nano-banana`)
-      - `language prompt_language NOT NULL` — enum 타입 `prompt_language`: (`en`, `ko`). 기본값은 tool 연동(MJ→en, NBP→ko)이나 수동 override 허용 (예: MJ 한글 실험)
+      - `tool prompt_tool NOT NULL` — enum 타입 `prompt_tool`: (`midjourney`, `nano-banana`, `higgsfield`). **3종 모두 지원** (0003 마이그레이션에서 higgsfield 추가됨)
+      - `language prompt_language NOT NULL` — enum 타입 `prompt_language`: (`en`, `ko`). 기본값은 tool 연동(MJ→en, NBP→ko, Higgsfield→en)이나 수동 override 허용 → **6 조합 전부 저장 가능**
       - `self_rating smallint CHECK (self_rating IS NULL OR self_rating BETWEEN 1 AND 5)` — 프롬프트 자체 만족도, 1차 성공 지표 (이미지 결과 만족도는 `pairs.satisfaction`로 분리)
       - enum 타입 생성: `CREATE TYPE prompt_tool AS ENUM ('midjourney','nano-banana'); CREATE TYPE prompt_language AS ENUM ('en','ko');`
       - 인덱스: `CREATE INDEX prompts_tool_language_idx ON prompts (user_id, tool, language)` (F002 스니펫 필터, F006 리믹스 기본값 조회 최적화)
@@ -152,7 +152,7 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
   - 완료 기준:
     - `lib/schemas/tokens.ts` 에 `tokenSchema` (Zod, 6-key 엄격 고정, `.strict()` + 빈 문자열 거부) 정의
     - `lib/schemas/reference.ts`, `lib/schemas/prompt.ts`, `lib/schemas/pair.ts` 정의
-    - **`prompt.ts`에 tool·language·self_rating 제약**: `tool: z.enum(['midjourney','nano-banana'])`, `language: z.enum(['en','ko'])`, `self_rating: z.number().int().min(1).max(5).nullable()`. **기본값 연동 validator**: MJ tool + ko language 조합은 warning 표시(override 의도 확인용), NBP tool + en language도 마찬가지 — 에러가 아닌 UI 경고 레벨
+    - **`prompt.ts`에 tool·language·self_rating 제약**: `tool: z.enum(['midjourney','nano-banana','higgsfield'])`, `language: z.enum(['en','ko'])`, `self_rating: z.number().int().min(1).max(5).nullable()`. **6 조합 전부 유효**. 기본값 연동 (MJ→en, NBP→ko, Higgsfield→en)은 UI default로 처리하되 Zod 레벨에서는 모든 조합 허용
     - `lib/claude-code/paste-parser.ts`: 안나가 Claude Code 응답을 붙여넣은 텍스트에서 6-key JSON을 추출해 `tokenSchema.parse()` 로 검증하는 유틸. 응답이 JSON 블록으로 감싸져 있을 수 있으니 ```json ... ``` 코드펜스 stripping 포함
     - **vitest 설치 + 단위 테스트 세팅** (ENG-11 autoplan 반영):
       - `npm i -D vitest @vitest/ui`
@@ -269,10 +269,10 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
     - 1~10 점수 입력: **10-step dot slider** 고정 (DESIGN-7 autoplan 반영 — "슬라이더 또는 스타 레이팅" 결정 유보 제거)
     - 태그 추가/삭제 (tag_kind: category/mood/color/purpose 구분 선택)
     - **프롬프트 스니펫 텍스트 영역** (여러 버전 저장 가능, `prompts.source = 'copied'`):
-      - **tool 토글 필수** (Midjourney / Nano Banana Pro, 세그먼트 컨트롤)
-      - **language 토글 필수** (en / ko, tool 선택 시 기본값 자동 세팅: MJ→en, NBP→ko, 수동 override 가능)
+      - **tool 3-way 토글 필수** (Midjourney · Nano Banana Pro · Higgsfield, 세그먼트 컨트롤)
+      - **language 2-way 토글 필수** (en · ko, tool 선택 시 기본값 자동 세팅: MJ→en, NBP→ko, Higgsfield→en, 수동 override 가능 → **6 조합 자유**)
       - (선택) self_rating 1~5 입력 — 페어 저장 시에도 기록되지만 여기서 선행 평가 가능
-    - 저장 즉시 카드 UI 반영 (optimistic update). 스니펫 목록은 tool·language 배지로 시각 구분
+    - 저장 즉시 카드 UI 반영 (optimistic update). 스니펫 목록은 tool·language 배지로 시각 구분 (도구별 색상 차별화 권장)
   - 테스트 체크리스트 (Playwright MCP):
     - [ ] 점수 저장 후 카드 반영 확인
     - [ ] 태그 추가 → DB 반영 → 새로고침 후 유지 확인
@@ -319,10 +319,15 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
   - 목표: `/pairs` 페이지에 프롬프트 입력 + 결과 이미지 업로드 + 만족도 마킹 UI
   - 참조 PRD 기능: F003 (PRD 57, 150-160)
   - 완료 기준:
-    - **tool 토글** (Midjourney / Nano Banana Pro 세그먼트 컨트롤, 최상단 배치). 선택 시 language 자동 연동(MJ→en, NBP→ko, 수동 override 가능)
-    - 프롬프트 텍스트 입력 필드 (multiline, tool에 맞춰 placeholder 변경 — MJ면 "영어 프롬프트 붙여넣기", NBP면 "한국어 프롬프트 붙여넣기")
-    - **Cmd+V 스마트 매칭** (DESIGN-5 autoplan 반영): 페어 페이지 진입 시 `localStorage.promptStudio.recentCopiedPrompt` 감지 → 입력 필드 + tool 토글 + language 전부 prefill + 상단에 "이 레퍼런스에서 왔죠? [레퍼런스명] · [MJ|NBP]" 컨펌 카드 노출(수락 시 `prompts.reference_id` 자동 연결, 거부 시 prefill 클리어). 루프 이터레이션 -50% 목표 직접 레버리지
-    - 결과 이미지 drag-drop 영역 (여러 장 동시 업로드 — MJ variations 또는 NBP 합성 iteration 대응)
+    - **tool 3-way 토글** (Midjourney · Nano Banana Pro · Higgsfield 세그먼트 컨트롤, 최상단 배치). 선택 시 language 자동 연동(MJ→en, NBP→ko, Higgsfield→en, 수동 override 가능)
+    - **language 2-way 토글** (en · ko, 6 조합 자유)
+    - 프롬프트 텍스트 입력 필드 (multiline, tool·language 조합에 맞춰 placeholder 분기):
+      - MJ-en: "영어 프롬프트 붙여넣기 (--ar, --style raw 등 MJ 파라미터 포함)"
+      - NBP-ko: "한국어 프롬프트 붙여넣기"
+      - Higgsfield-en: "영어 프롬프트 (dolly in, tracking shot 등 영상 용어 권장)"
+      - 나머지 3 조합은 공통 기본 placeholder
+    - **Cmd+V 스마트 매칭** (DESIGN-5 autoplan 반영): 페어 페이지 진입 시 `localStorage.promptStudio.recentCopiedPrompt` 감지 → 입력 필드 + tool 토글 + language 전부 prefill + 상단에 "이 레퍼런스에서 왔죠? [레퍼런스명] · [MJ\|NBP\|Higgsfield]" 컨펌 카드 노출(수락 시 `prompts.reference_id` 자동 연결, 거부 시 prefill 클리어). 루프 이터레이션 -50% 목표 직접 레버리지
+    - 결과 파일 drag-drop 영역 (여러 장 동시 업로드 — MJ variations · NBP 합성 iteration · Higgsfield 영상 세그먼트/썸네일 대응. 영상 파일은 용량 큰 경우 대표 프레임만 올리는 워크플로우 권장)
     - **프롬프트 자체 만족도** (`prompts.self_rating`, 1~5 별점): "이 프롬프트가 내 머릿속 의도를 얼마나 담았나" — 1차 성공 지표
     - **이미지 결과 만족도** (`pairs.satisfaction`, 1~5 별점): 이미지 품질 평가 — 2차 지표
     - 두 지표 분리 배치(별점 2줄)로 "프롬프트 좋았는데 모델이 못 뽑았다" vs "프롬프트가 부족했다" 구분 가능
@@ -332,8 +337,12 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
       - 페어 저장 시 `sessionLastActivity` 갱신
       - 새 페어 진입 시 `now - sessionLastActivity < 30분`이면 기존 session 재사용, 아니면 신규 UUID 발급
       - 여러 탭에서 동시 사용해도 localStorage 공유로 동일 세션 ID 유지
-    - 저장된 페어 목록 (시간 역순, **tool · 최종채택 · self_rating ≥ 4 · satisfaction ≥ 4 다중 필터**)
-    - 각 result_image를 업로드 순서대로 "Variation 1, 2, 3..." (MJ) 또는 "Iteration 1, 2, 3..." (NBP 합성) 라벨링 — tool에 따라 라벨 텍스트 분기 — **EDGE-3 CEO 리뷰 반영**
+    - 저장된 페어 목록 (시간 역순, **tool 3종 · language 2종 · 최종채택 · self_rating ≥ 4 · satisfaction ≥ 4 다중 필터**)
+    - 각 result_image를 업로드 순서대로 라벨링 — tool에 따라 분기:
+      - MJ: "Variation 1, 2, 3..."
+      - NBP: "Iteration 1, 2, 3..."
+      - Higgsfield: "Shot 1, 2, 3..." (영상 세그먼트 단위)
+      — **EDGE-3 CEO 리뷰 반영**
   - 예상 소요: 5시간
   - 의존: Task 003, 006
 
@@ -389,8 +398,10 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
     - [ ] 점수·태그·스니펫 저장 및 재진입 시 유지 확인 (**스니펫 tool·language 필드 저장 확인**)
     - [ ] `[copy prompt]` 클립보드 복사 동작 + localStorage에 tool·language 메타 기록 확인
     - [ ] 레퍼런스 상세 페이지 토큰 편집·삭제 동작
-    - [ ] **MJ 세션**: MJ tool + 영어 프롬프트 페어 저장 + self_rating 기록 + 세션 이터레이션 카운트 동작 + Cmd+V 스마트 매칭 동작
-    - [ ] **NBP 세션**: NBP tool + 한국어 프롬프트 페어 저장 + self_rating 기록 (최소 1건) — 실사용 주력 경로 검증
+    - [ ] **NBP 세션 (실사용 1순위)**: NBP tool + 한국어 프롬프트 페어 저장 + self_rating 기록 (최소 2건, 실물 제품 주력 경로 검증)
+    - [ ] **Higgsfield 세션 (실사용 2순위)**: Higgsfield tool + 영어 프롬프트 페어 저장 (영상 촬영 용어 포함, 최소 1건)
+    - [ ] **MJ 세션 (실사용 3순위)**: MJ tool + 영어 프롬프트 페어 저장 + Cmd+V 스마트 매칭 동작 (최소 1건)
+    - [ ] **언어 override**: 기본값 반대 언어로도 저장 가능 확인 (예: MJ+ko 또는 NBP+en 최소 1건) — 6 조합 모두 UI에서 선택·저장 가능
     - [ ] **~~골든 샘플 회귀 테스트~~**: Claude Code 응답은 비결정적이고 안나 세션마다 다를 수 있어 자동 회귀 비현실적. **폐기**. 대신 Zod 스키마 단위 테스트(Task 005)가 구조 보장 담당
   - **3-tier 판정**:
     - **PASS**: 위 8개 체크박스 전부 통과 **+ 실사용 1회 완료** (레퍼런스 5개 드롭 → 태그·스니펫 → copy prompt → MJ 실행 → 페어 저장까지 왕복 무버그) → Task 018(F004 착수) 진행 + Task 020(배포) 진행
@@ -536,18 +547,27 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
   - 참조 PRD 기능: F006 (PRD 재정의), Claude Code 컴패니언 모델
   - 완료 기준:
     - `/remix` 페이지에 기준 레퍼런스 선택 UI
-    - **tool 토글** (Midjourney / Nano Banana Pro) — 기본값: 기준 레퍼런스의 최근 성공 프롬프트(self_rating ≥ 4) tool, 없으면 MJ
+    - **tool 3-way 토글** (Midjourney · Nano Banana Pro · Higgsfield) — 기본값: 기준 레퍼런스의 최근 성공 프롬프트(self_rating ≥ 4) tool, 없으면 NBP (실사용 1순위)
+    - **language 2-way 토글** (en · ko) — 기본값: tool 연동 (MJ→en, NBP→ko, Higgsfield→en), 수동 override 가능
     - "이 느낌 × 새 주제" 자연어 입력
-    - **`lib/remix/template-engine.ts`** (클라이언트 전용, 서버 API 없음): 기준 레퍼런스의 6차원 토큰 + 새 주제 + tool을 받아 요청 문장 조립
-      - MJ 템플릿 (영어):
+    - **`lib/remix/template-engine.ts`** (클라이언트 전용, 서버 API 없음): 기준 레퍼런스의 6차원 토큰 + 새 주제 + `(tool, language)` 키로 **6 템플릿 중 하나 선택**해 조립
+      - **MJ-en**:
         ```
-        Generate 3 Midjourney prompts in English based on these 6-dimension attributes from a reference image:
+        Generate 3 Midjourney prompts in English based on these 6-dimension attributes:
         subject: {tokens.subject}, style: {tokens.style}, lighting: {tokens.lighting},
         composition: {tokens.composition}, medium: {tokens.medium}, mood: {tokens.mood}
         New subject: {theme}
-        Use Midjourney syntax (--ar, --style raw, etc.). Return 3 numbered options.
+        Use Midjourney syntax (--ar 16:9, --style raw, etc.). Return 3 numbered options.
         ```
-      - NBP 템플릿 (한국어):
+      - **MJ-ko**:
+        ```
+        다음 6차원을 토대로 Midjourney 프롬프트 후보 3개를 한국어로 제시:
+        피사체: {tokens.subject} / 스타일: {tokens.style} / 조명: {tokens.lighting} /
+        구도: {tokens.composition} / 매체: {tokens.medium} / 분위기: {tokens.mood}
+        새 주제: {theme}
+        각 후보 끝에 --ar, --style raw 등 MJ 파라미터 영어로 병기.
+        ```
+      - **NBP-ko**:
         ```
         다음 6차원 분석을 토대로 나노바나나 프롬프트 3개를 한국어로 생성해주세요:
         피사체: {tokens.subject}, 스타일: {tokens.style}, 조명: {tokens.lighting},
@@ -555,7 +575,41 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
         새 주제: {theme}
         배경·피사체·조명·분위기를 명시적으로 서술. 3가지 안을 번호로 반환.
         ```
-    - **요청 문장 실시간 프리뷰**: 사용자 입력 변경 시 즉시 조립 결과 표시
+      - **NBP-en**:
+        ```
+        Generate 3 Nano Banana Pro prompts in English based on these dimensions:
+        subject: {tokens.subject}, style: {tokens.style}, lighting: {tokens.lighting},
+        composition: {tokens.composition}, medium: {tokens.medium}, mood: {tokens.mood}
+        New subject: {theme}
+        Describe background, subject, lighting, mood explicitly. Return 3 numbered options.
+        ```
+      - **Higgsfield-en** (영상 우선 특화):
+        ```
+        Generate 3 Higgsfield prompts in English for video/motion generation.
+        Base dimensions: subject: {tokens.subject}, style: {tokens.style}, lighting: {tokens.lighting},
+        composition: {tokens.composition}, medium: {tokens.medium}, mood: {tokens.mood}
+        New subject: {theme}
+        Rules:
+        - Short imperative commands (no polite filler, no "please")
+        - Separate image layout from motion: first line locks keyframe (lighting, lens, framing),
+          second line specifies camera move + subject action + strong verb
+        - Use cinematic terms: dolly in/out, tracking shot, slow motion, push-in, orbit
+        - One clear beat per line
+        Return 3 numbered options.
+        ```
+      - **Higgsfield-ko**:
+        ```
+        Higgsfield 프롬프트 3개를 한국어로 생성. 영어 촬영 용어(dolly in, tracking shot, slow motion 등)는 그대로 유지.
+        6차원: 피사체: {tokens.subject}, 스타일: {tokens.style}, 조명: {tokens.lighting},
+        구도: {tokens.composition}, 매체: {tokens.medium}, 분위기: {tokens.mood}
+        새 주제: {theme}
+        규칙:
+        - 짧은 명령형 (정중한 표현 금지)
+        - 키프레임(조명·렌즈·프레이밍)과 모션(카메라 무브·주체 동작·강한 동사) 분리 서술
+        - 각 비트를 한 줄에
+        3가지 안을 번호로 반환.
+        ```
+    - **요청 문장 실시간 프리뷰**: tool·language·입력 변경 시 즉시 조립 결과 표시 (6 템플릿 중 선택 조합 적용)
     - **[Claude Code로 요청 복사]** 버튼 (클립보드, 실패 시 textarea 폴백)
     - 안나가 Claude Code에서 후보 3개 받아 마음에 드는 것 복사 → 페어 로그 페이지에 붙여넣기 (Cmd+V 스마트 매칭 + `prompts.source='remix'` 자동 태깅 + `reference_id=기준 레퍼런스` 자동 연결)
     - **채택률 측정 훅**: 페어 로그에 paste된 프롬프트가 `source='remix'`이면 `remix_origin_reference_id` 같은 메타와 연계해 Phase 3 실측에서 "리믹스 제안 → 실제 MJ/NBP 실행 비율" 집계 (구현은 기본 `source='remix'` 필드만으로도 충분)

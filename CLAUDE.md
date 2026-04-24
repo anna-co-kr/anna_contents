@@ -10,7 +10,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   2. 안나가 Claude Code에서 받은 응답을 제품 paste 폼에 붙여넣으면 **Zod 검증·구조화·저장** (F001 백)
   3. 레퍼런스·페어 로그·태그·프롬프트 스니펫 **축적 관리** (F002/F003)
   4. F006 리믹스는 **클라이언트 템플릿 엔진**으로 Claude Code 요청 문장 조립 → 클립보드 (API 호출 0)
-- **안나의 실사용 도구 분기**: 추상 이미지는 MJ 주력(영어 프롬프트), 실물 인접 이미지는 NBP 주력(한국어 프롬프트). 안나 자기진단 약점은 "프롬프트 활용능력이 낮아 단순 설명 반복" → 도구의 1차 가치는 **Claude Code에 정확하게 질문하도록 프롬프트 조립을 대신해주는 것**. Task 000(T0 실측) 스킵 확정으로 1차 성공 지표는 `prompts.self_rating` 평균 uplift, 2차는 시간·이터레이션 감축.
+- **안나의 실사용 도구 3종 (빈도: NBP > Higgsfield > MJ, 편집 CapCut은 scope 외)**:
+  - **Nano Banana Pro (주력)**: 실물 인접 이미지, 한국어 프롬프트 기본
+  - **Higgsfield (2순위)**: 영상 작업 주, 영어 프롬프트 기본 (짧고 명령형, "dolly in/tracking shot" 촬영 용어)
+  - **Midjourney (3순위)**: 추상 이미지, 영어 프롬프트 기본
+  - **모든 도구에서 en/ko 둘 다 선택 가능** (기본값 연동하되 수동 override 허용 → 6 조합 자유). 안나 자기진단 약점은 "프롬프트 활용능력이 낮아 단순 설명 반복" → 도구의 1차 가치는 **Claude Code에 정확하게 질문하도록 도구별 베스트 프랙티스가 반영된 프롬프트 조립을 대신해주는 것**. Task 000(T0 실측) 스킵 확정으로 1차 성공 지표는 `prompts.self_rating` 평균 uplift, 2차는 시간·이터레이션 감축.
 - 기획 단계는 gstack /office-hours + /autoplan 으로 수행됨 (산출물: PRD·ROADMAP·DESIGN 3개 문서). 구현 단계는 일반 Claude Code + /git:commit + /docs:update-roadmap. D10 게이트·D13 배포 시점에 /review·/qa·/ship 사용 여부 재판단.
 
 **루트 README.md는 업스트림 스타터 문서이므로 제품 맥락 참고 불가.** 제품 맥락은 아래 문서에서 가져올 것:
@@ -71,7 +75,7 @@ Next.js 15부터 도입된 기능으로 현재 Next.js 16에서 **기본 활성*
 - **Supabase 환경변수 키 이름**: `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (신규 키 이름, legacy `ANON_KEY`와 호환). `lib/supabase/{client,server,proxy}.ts` 3개 파일 모두 `PUBLISHABLE_KEY`를 참조하므로 **절대 `ANON_KEY`로 되돌리지 말 것**. 추가 예정 키: `SUPABASE_SERVICE_ROLE_KEY`, `ANTHROPIC_API_KEY`, `VOYAGE_API_KEY`.
 - **`cacheComponents: true` 유지 + Suspense 경계 의무**: `next.config.ts` 기본값 유지(Supabase 공식 스타터 설정). 새 페이지에서 `cookies()`/`headers()`/`searchParams`/`params` 같은 dynamic API 사용 시 반드시 `<Suspense>` 경계로 감쌀 것. `app/page.tsx` 기존 Suspense 패턴 참고. 이 규칙 위반 시 빌드·런타임 오류 발생.
 - **6차원 토큰 스키마 엄격 고정**: `subject` / `style` / `lighting` / `composition` / `medium` / `mood` (영어 고정). **Zod `tokenSchema.parse()`가 유일한 방어선** — Claude Code CLI 응답을 paste 폼으로 받으므로 외부 API의 `tool_use`/JSON mode 구조 강제가 없음. 따라서 Zod는 `.strict()` + 빈 문자열 거부 + 6-key required를 엄격하게 설정. `lib/claude-code/paste-parser.ts`가 ```json 코드펜스 stripping 후 parse.
-- **prompts 테이블 3필드 고정** (2026-04-24 실사용 반영): `tool prompt_tool NOT NULL` (enum: midjourney/nano-banana), `language prompt_language NOT NULL` (enum: en/ko), `self_rating smallint CHECK(1-5)` (1차 성공 지표 — 프롬프트 자체 만족도). 이미지 결과 만족도는 `pairs.satisfaction`으로 분리 측정. tool·language 기본값 연동(MJ→en, NBP→ko)이나 수동 override 허용.
+- **prompts 테이블 3필드 고정** (2026-04-24 실사용 반영): `tool prompt_tool NOT NULL` (enum: midjourney/nano-banana/**higgsfield**, migration 0003에서 확장됨), `language prompt_language NOT NULL` (enum: en/ko), `self_rating smallint CHECK(1-5)` (1차 성공 지표 — 프롬프트 자체 만족도). 이미지·영상 결과 만족도는 `pairs.satisfaction`으로 분리 측정. **6 조합 (tool × language) 전부 UI·Zod 레벨에서 지원**. 기본값 연동(MJ→en, NBP→ko, Higgsfield→en)은 UI default, Zod는 모든 조합 허용.
 - **reference_tokens.source 필드**: `text NOT NULL DEFAULT 'claude-code' CHECK (source IN ('claude-code','manual'))` — Claude Code 응답 paste인지 수동 6필드 입력인지 구분. 이전 `vision_model_version` 필드 폐기·교체.
 - **외부 AI API 미사용** (2026-04-24 B 재설계): Anthropic API·Voyage API 모두 호출하지 않음. `ANTHROPIC_API_KEY`·`VOYAGE_API_KEY` 환경변수 불필요. `vision_usage` counter 테이블 없음. `reference_tokens.embedding` 컬럼 없음. pgvector extension 미활성. 이 원칙 위반 시 월 운영비 발생하므로 PR 리뷰에서 차단.
 - **Claude Code 컴패니언 모델 구현 지점**: (1) `lib/claude-code/prompt-builder.ts` — 6차원 분석 요청 조립, (2) `lib/claude-code/paste-parser.ts` — 응답 JSON 추출·Zod 검증, (3) `lib/remix/template-engine.ts` — 리믹스 요청 템플릿. 셋 다 **클라이언트·서버 공용 pure function**, 외부 네트워크 호출 없음.
@@ -99,11 +103,12 @@ enabled: `supabase`(project ID `nkdqaknfdnriywhynxop` 고정), `playwright`, `co
 
 ## 개발 관례
 
-- **언어**: 이 프로젝트의 모든 문서·커밋 메시지·UI 카피는 한국어. 코드 식별자는 영어. **생성 프롬프트 언어는 도구별로 분기**:
-  - **F001 Vision 응답**: 영어 고정 (도구 독립적 의미 단위, F006가 도구별 언어로 변환)
-  - **MJ(Midjourney) 프롬프트**: 영어 (안나 실사용 — 대화형 AI로 영어 초안 생성 후 수정)
-  - **NBP(Nano Banana Pro) 프롬프트**: 한국어 (안나 실사용 — 실물 제품 작업 주력 도구, 한국어 프롬프트로 배경 빌드업 + 제품 합성)
-  - **F006 리믹스**: tool에 맞춰 자동 분기 (MJ→영어 후보, NBP→한국어 후보)
+- **언어**: 이 프로젝트의 모든 문서·커밋 메시지·UI 카피는 한국어. 코드 식별자는 영어. **생성 프롬프트 언어는 도구별 기본값 + 사용자 override 지원**:
+  - **F001 6차원 토큰 영어 고정**: 도구 독립적 의미 단위, F006가 도구별 언어로 변환
+  - **MJ 기본 en / 옵션 ko**: 추상 이미지 · 대화형 AI로 영어 초안 생성 후 수정이 실사용 패턴
+  - **NBP 기본 ko / 옵션 en**: 실물 제품 주력 · 한국어로 배경 빌드업 + 제품 합성
+  - **Higgsfield 기본 en / 옵션 ko**: 영상 작업 주 · 공식 권장 영어 · 짧고 명령형 · 촬영 용어 그대로 유지
+  - **F006 리믹스**: `(tool, language)` 키로 6 템플릿 중 하나 선택 (MJ-en, MJ-ko, NBP-en, NBP-ko, Higgsfield-en, Higgsfield-ko)
 - **커밋**: `/git:commit` 사용. Claude 서명 금지(명령어 파일 명시). `Co-Authored-By` 태그도 이 프로젝트에서는 관례상 붙이지 않음(commit.md 규칙 우선).
 - **ROADMAP Task 추적**: 구현 시작 전 해당 Task의 "완료 기준" 전부 확인. Playwright MCP 테스트 체크리스트가 있는 Task는 구현 후 체크 필수. 완료 후 `/docs:update-roadmap` 또는 수동으로 `[x]` 체크.
 - **"기능 완성도 ≠ 영상 출시"**: ROADMAP의 크리티컬 패스는 D13 영상 출시. 도구는 레버리지일 뿐. D10 게이트가 PARTIAL/FAIL이면 새 기능 착수 금지.

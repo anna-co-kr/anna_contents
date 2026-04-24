@@ -240,7 +240,7 @@ export type Database = {
     Enums: {
       prompt_language: "en" | "ko"
       prompt_source: "copied" | "modified" | "remix"
-      prompt_tool: "midjourney" | "nano-banana"
+      prompt_tool: "midjourney" | "nano-banana" | "higgsfield"
       tag_kind: "category" | "mood" | "color" | "purpose"
     }
     CompositeTypes: {
@@ -374,7 +374,7 @@ export const Constants = {
     Enums: {
       prompt_language: ["en", "ko"],
       prompt_source: ["copied", "modified", "remix"],
-      prompt_tool: ["midjourney", "nano-banana"],
+      prompt_tool: ["midjourney", "nano-banana", "higgsfield"],
       tag_kind: ["category", "mood", "color", "purpose"],
     },
   },

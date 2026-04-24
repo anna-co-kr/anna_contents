@@ -2,7 +2,7 @@
 
 ## 핵심 정보
 
-**목적**: 안나가 AI 이미지 생성(Midjourney, Nano Banana Pro) 시 **낮은 프롬프트 활용 능력을 Claude Code CLI가 보좌**하도록 도구가 워크플로우를 정돈한다. 제품은 외부 AI API를 호출하지 않고, 안나의 **Claude Code MAX 구독을 레버리지**해 Claude Code 세션에 붙여넣을 분석·리믹스 요청 프롬프트를 자동 조립하고, 대화 결과를 Zod 검증해 저장한다. **프롬프트 품질 향상 → 원하는 이미지 추출 증가 → 수렴 이터레이션 감소 → 포스트당 2시간 병목 해소**의 3단 인과는 그대로 유지된다.
+**목적**: 안나가 AI 이미지·영상 생성(Nano Banana Pro, Higgsfield, Midjourney) 시 **낮은 프롬프트 활용 능력을 Claude Code CLI가 보좌**하도록 도구가 워크플로우를 정돈한다. 제품은 외부 AI API를 호출하지 않고, 안나의 **Claude Code MAX 구독을 레버리지**해 Claude Code 세션에 붙여넣을 분석·리믹스 요청 프롬프트를 자동 조립하고, 대화 결과를 Zod 검증해 저장한다. **프롬프트 품질 향상 → 원하는 이미지·영상 추출 증가 → 수렴 이터레이션 감소 → 포스트당 2시간 병목 해소**의 3단 인과는 그대로 유지된다.
 
 **사용자**: 안나 1인 (Instagram/YouTube 글로벌 디자인 큐레이터 채널, 단일 Supabase 계정, Claude MAX 구독자)
 
@@ -11,10 +11,12 @@
 - 제품의 역할: (1) Claude Code에 붙여넣을 **완성된 분석·리믹스 요청 프롬프트** 생성 및 클립보드 제공, (2) 안나가 Claude Code에서 받은 응답을 제품의 paste 폼에 붙여넣으면 Zod로 **검증·구조화·저장**, (3) 레퍼런스·페어·태그·스니펫 축적 관리, (4) MJ/NBP 복붙 헬퍼
 - Claude Code는 안나의 기존 툴스택에 이미 존재 → 학습 곡선 없음
 
-**도구 사용 양상 (실사용 기반)**:
-- **추상 이미지 작업**: Midjourney 주력(영어 프롬프트, 대화형 AI로 초안 생성 후 수정 반복). 일부 사실적 제품 추가·미세 수정은 Nano Banana Pro
-- **실물 인접 이미지 작업**: Nano Banana Pro 주력(한국어 프롬프트). NBP는 확률적 미감이 낮아 기존 이미지로 배경 빌드업 → 실제 제품 합성하는 패턴
-- **자기진단 약점**: 단순 설명으로 이미지를 마음에 들 때까지 반복 → 시간 소요 큼. 도구의 가장 직접적 가치는 **Claude Code에게 정확하게 질문하도록 프롬프트를 조립해주는 것**
+**도구 사용 양상 (실사용 기반, 빈도: NBP > Higgsfield > MJ, 편집은 CapCut — 제품 scope 외)**:
+- **Nano Banana Pro (주력)**: 실물 인접 이미지 작업. **한국어 프롬프트 기본**. NBP는 확률적 미감이 낮아 기존 이미지로 배경 빌드업 → 실제 제품 합성하는 패턴
+- **Higgsfield (2순위)**: 이미지 생성도 지원하나 **영상 작업이 주**. **영어 프롬프트 기본** (공식 문서·모델 권장, 짧고 명령형, "dolly in / slow motion tracking shot" 같은 촬영 용어 중심). 이미지·모션·identity를 분리한 레이어드 프롬프트 방식
+- **Midjourney (3순위)**: 추상 이미지. **영어 프롬프트 기본** (대화형 AI로 초안 생성 후 수정 반복). 사실적 제품 추가·미세 수정은 NBP로 보완
+- **중요 — 언어 자유**: 모든 도구에서 `tool × language` 6개 조합(MJ·NBP·Higgsfield × en·ko) 중 원하는 걸 UI에서 선택·저장·리믹스 가능. 기본값은 위의 도구별 권장 언어이나 안나가 실험적으로 반대 언어 쓸 수 있도록 override 허용
+- **자기진단 약점**: 단순 설명으로 이미지·영상을 마음에 들 때까지 반복 → 시간 소요 큼. 도구의 가장 직접적 가치는 **Claude Code에게 정확하게 질문하도록 프롬프트를 조립해주는 것**
 
 **성공 기준 (2-tier)**:
 - **1차 — 프롬프트 품질 uplift (핵심)**: 페어 저장 시 프롬프트 자체 만족도(1~5 self_rating) 평균이 T1~T3에서 T0 추정 대비 상향. F006 리믹스 도입 시 "Claude Code 제안 후보 중 채택한 비율"로 객관화
@@ -39,9 +41,10 @@
                     → (폴백) 수동 6필드 입력도 지원
                        ↓
                     [좋아요 점수·태그·프롬프트 스니펫 입력]
-                       - 스니펫은 tool(midjourney|nano-banana) + language(en|ko) 메타 포함
+                       - 스니펫은 tool(midjourney|nano-banana|higgsfield) + language(en|ko) 메타 포함
+                       - 6개 조합 중 UI 토글로 자유 선택 (기본값 연동: MJ→en, NBP→ko, Higgsfield→en)
                        ↓
-                    [copy prompt] 버튼 → 클립보드 → MJ(영어) 또는 NBP(한국어)에 붙여넣기
+                    [copy prompt] 버튼 → 클립보드 → 선택한 도구(MJ·NBP·Higgsfield)에 붙여넣기
 
    [레퍼런스 카드 클릭] → 레퍼런스 상세 페이지
 
@@ -49,8 +52,8 @@
    ↓ 프롬프트 스니펫 확인 (도구·언어별 필터링) + 토큰 수동 편집 가능
 
 4. 프롬프트 페어 로그 페이지
-   ↓ MJ/NBP에서 실행한 프롬프트 + 결과 이미지 pair 저장
-   ↓ 도구별 세션 구분 (tool 토글)
+   ↓ MJ · NBP · Higgsfield에서 실행한 프롬프트 + 결과 이미지/영상 프레임 pair 저장
+   ↓ 도구·언어 구분 (tool 토글 3종 + language 토글 2종, 총 6 조합 자유 선택)
 
    [프롬프트 자체 만족도 1~5 입력] → 프롬프트 품질 uplift 지표 축적
    [이미지 결과 만족도 1~5 입력] → 이미지 품질 평가
@@ -64,8 +67,9 @@
    ↓ 태그 다중 필터 + 프롬프트 텍스트 ILIKE 검색 (외부 임베딩 API 없이)
 
 7. 리믹스 요청 프롬프트 생성 페이지 (V1.5)
-   ↓ 기준 레퍼런스 + 새 주제 → 제품이 Claude Code에 붙여넣을 "완성된 요청 문장" 생성
-      (MJ 기준 → 영어 템플릿, NBP 기준 → 한국어 템플릿, 클라이언트 템플릿 엔진, API 호출 0)
+   ↓ 기준 레퍼런스 + tool 선택(MJ·NBP·Higgsfield) + language 선택(en·ko) + 새 주제
+      → 제품이 6 조합 템플릿 중 하나로 "완성된 요청 문장" 생성 (Higgsfield는 짧은 명령형·촬영 용어)
+      (클라이언트 템플릿 엔진, API 호출 0)
    → (외부 툴) 안나가 Claude Code에서 후보 3개 받아 마음에 드는 것 복사
    → 4번(프롬프트 페어 로그 페이지)에서 붙여넣어 저장 (source='remix')
 ```
@@ -78,9 +82,9 @@
 
 | ID | 기능명 | 설명 | MVP 필수 이유 | 관련 페이지 |
 |----|--------|------|--------------|------------|
-| **F001** | URL/이미지 드롭 + Claude Code 분석 연동 | IG/Pinterest/YouTube/Are.na URL 또는 이미지 파일을 드롭하면 제품이 **Claude Code CLI에 붙여넣을 6차원 분석 요청 프롬프트를 클립보드에 복사**. 안나가 Claude Code에서 이미지+프롬프트로 분석 후 6-key JSON 응답(subject/style/lighting/composition/medium/mood, **영어 고정**)을 제품의 paste 폼에 붙여넣으면 **Zod 검증 → reference_tokens 저장**. 수동 6필드 입력 폴백도 지원 | "이 레퍼런스 같은 결과를 **MJ/NBP에서** 어떻게 뽑는가"의 역공학 반복이 2시간 병목의 근원. Claude Code가 언어 번역 gap을 메우되 **제품이 분석 요청을 정확하게 조립**해주는 것이 핵심 레버리지. 외부 API 직접 호출 없음 → 과금 0 | 레퍼런스 라이브러리 페이지 |
-| **F002** | 좋아요·태그·프롬프트 스니펫 필드 | 레퍼런스에 1~10 점수, 수동 태그(카테고리/무드/색감/용도), 프롬프트 스니펫 저장 및 [copy prompt] 버튼으로 클립보드 복사. 스니펫 저장 시 **tool(midjourney|nano-banana)·language(en|ko)** 메타 필수 | 취향 데이터 축적 없이는 반복 실험이 의미 없음. copy prompt → **MJ(영어) 또는 NBP(한국어) 붙여넣기**가 실질 워크플로우 단축 핵심. 도구·언어 메타가 있어야 F005 필터·F006 리믹스에서 언어 일관성 보장 | 레퍼런스 라이브러리 페이지, 레퍼런스 상세 페이지 |
-| **F003** | 프롬프트 페어 로그 | **MJ/NBP에서** 실행한 프롬프트 문구 + 결과 이미지를 pair로 저장. "프롬프트 자체 만족도 1~5"(`self_rating`, 1차 성공 지표) + "이미지 결과 만족도 1~5"(`satisfaction`) 분리 입력. `is_final_pick` 최종 채택 마킹. 한 프롬프트에 여러 결과 이미지(MJ variations 또는 NBP 합성 iteration) 연결 | 반복 이터레이션 기록 없이는 무엇이 효과 있었는지 추적 불가. **프롬프트 품질(self_rating)과 이미지 품질(satisfaction)을 분리 측정**해야 "프롬프트가 좋았는데 모델이 못 뽑았다" vs "프롬프트가 애초에 부족했다" 구분 가능 | 프롬프트 페어 로그 페이지 |
+| **F001** | URL/이미지 드롭 + Claude Code 분석 연동 | IG/Pinterest/YouTube/Are.na URL 또는 이미지 파일을 드롭하면 제품이 **Claude Code CLI에 붙여넣을 6차원 분석 요청 프롬프트를 클립보드에 복사**. 안나가 Claude Code에서 이미지+프롬프트로 분석 후 6-key JSON 응답(subject/style/lighting/composition/medium/mood, **영어 고정**)을 제품의 paste 폼에 붙여넣으면 **Zod 검증 → reference_tokens 저장**. 수동 6필드 입력 폴백도 지원 | "이 레퍼런스 같은 결과를 **MJ·NBP·Higgsfield에서** 어떻게 뽑는가"의 역공학 반복이 2시간 병목의 근원. Claude Code가 언어 번역 gap을 메우되 **제품이 분석 요청을 정확하게 조립**해주는 것이 핵심 레버리지. 외부 API 직접 호출 없음 → 과금 0 | 레퍼런스 라이브러리 페이지 |
+| **F002** | 좋아요·태그·프롬프트 스니펫 필드 | 레퍼런스에 1~10 점수, 수동 태그(카테고리/무드/색감/용도), 프롬프트 스니펫 저장 및 [copy prompt] 버튼으로 클립보드 복사. 스니펫 저장 시 **tool(midjourney\|nano-banana\|higgsfield)·language(en\|ko)** 메타 필수. **6 조합 전부 UI에서 선택·저장 가능** (기본값 연동: MJ→en, NBP→ko, Higgsfield→en, 수동 override 허용) | 취향 데이터 축적 없이는 반복 실험이 의미 없음. copy prompt → **선택한 도구(MJ·NBP·Higgsfield) 붙여넣기**가 실질 워크플로우 단축 핵심. 도구·언어 메타가 있어야 F005 필터·F006 리믹스에서 조합별 일관성 보장 | 레퍼런스 라이브러리 페이지, 레퍼런스 상세 페이지 |
+| **F003** | 프롬프트 페어 로그 | **MJ·NBP·Higgsfield**에서 실행한 프롬프트 문구 + 결과 이미지/영상 프레임을 pair로 저장. "프롬프트 자체 만족도 1~5"(`self_rating`, 1차 성공 지표) + "이미지 결과 만족도 1~5"(`satisfaction`) 분리 입력. `is_final_pick` 최종 채택 마킹. 한 프롬프트에 여러 결과 파일(MJ variations · NBP 합성 iteration · Higgsfield 영상 세그먼트 또는 썸네일) 연결 | 반복 이터레이션 기록 없이는 무엇이 효과 있었는지 추적 불가. **프롬프트 품질(self_rating)과 결과 품질(satisfaction)을 분리 측정**해야 "프롬프트가 좋았는데 모델이 못 뽑았다" vs "프롬프트가 애초에 부족했다" 구분 가능 | 프롬프트 페어 로그 페이지 |
 
 ### 2. V1 필수 지원 기능
 
@@ -94,7 +98,7 @@
 |----|--------|------|----------|------------|
 | **F004** | 토큰 diff UI | 성공/실패 프롬프트 텍스트 간 단어 단위 diff 시각화 (jsdiff 등 클라이언트 라이브러리). 시간 순 나열 + 차이 단어 하이라이트(추가 초록·제거 빨강) | "muted 추가하니 결과 확 달라짐" 같은 패턴 추적으로 프롬프트 언어 학습 가속. 외부 API 없이 클라이언트 전용 동작 | 토큰 diff 페이지 |
 | **F005** | 태그·키워드 필터 검색 | 태그 다중 필터(카테고리/무드/색감/용도 교집합) + 프롬프트 텍스트 ILIKE 검색 + 6차원 토큰 키워드 매칭. **외부 임베딩 API 없음 — 1인 사용 레퍼런스 수(~100-500건)에서 태그·키워드로 충분**. V1.5에서 pgvector 도입은 레퍼런스 1000건 넘어갈 때 재검토 | 레퍼런스 축적 후 "비슷한 무드였던 게 뭐였지" 재접근 필요. 태그 기반으로 이미 충분한 정확도 달성 가능. 과금·운영 복잡도 제로 유지 | 유사 레퍼런스 검색 페이지 |
-| **F006** | 리믹스 요청 프롬프트 생성기 | 저장된 레퍼런스 선택 후 "이 느낌 × 새 주제" 입력 시 제품이 **Claude Code에 붙여넣을 완성된 요청 문장을 클라이언트 템플릿 엔진으로 조립** → 클립보드 복사. **기준 레퍼런스의 tool·language에 맞춰 템플릿 분기** — MJ 기준이면 영어 템플릿("Generate 3 Midjourney prompts..."), NBP 기준이면 한국어 템플릿("나노바나나 프롬프트 3개를..."). 안나가 Claude Code에서 후보 3개 받아 마음에 드는 것 선택 후 페어 로그에 붙여넣음 (source='remix') | 프롬프트 언어 표현 속도를 Claude Code가 보조. 제품의 가치는 **"매번 같은 요청 템플릿 조립하는 수고"**를 없애는 것. **"프롬프트 활용능력이 낮다"는 안나의 1차 pain에 가장 직접 대응**. 외부 API 호출 없이 클라이언트 전용 동작 | 리믹스 요청 프롬프트 생성 페이지 |
+| **F006** | 리믹스 요청 프롬프트 생성기 | 저장된 레퍼런스 선택 후 tool(MJ·NBP·Higgsfield) + language(en·ko) 선택 + "이 느낌 × 새 주제" 입력 시 제품이 **6 조합 중 하나의 템플릿으로 Claude Code 요청 문장을 클라이언트 템플릿 엔진으로 조립** → 클립보드 복사. **6 템플릿**: MJ-en(Midjourney syntax + --ar/--style), MJ-ko, NBP-en, NBP-ko("배경·피사체·조명·분위기 명시적 서술"), **Higgsfield-en("short imperative, dolly/tracking/shot 용어, 이미지·모션·identity 레이어 분리")**, Higgsfield-ko. 안나가 Claude Code에서 후보 3개 받아 마음에 드는 것 선택 후 페어 로그에 붙여넣음 (source='remix') | 프롬프트 언어 표현 속도를 Claude Code가 보조. 제품의 가치는 **"매번 같은 요청 템플릿 조립하는 수고"**를 없애고 **도구별 특성(Higgsfield는 촬영 용어, NBP는 한국어 서술)에 맞춘 베스트 프랙티스**를 캡슐화하는 것. **"프롬프트 활용능력이 낮다"는 안나의 1차 pain에 가장 직접 대응**. 외부 API 호출 없이 클라이언트 전용 동작 | 리믹스 요청 프롬프트 생성 페이지 |
 
 ### 4. MVP 이후 기능 (명시적 제외)
 
@@ -166,8 +170,8 @@ Prompt Studio v0.5 내비게이션
 |------|------|
 | **역할** | URL/이미지 드롭으로 레퍼런스를 수집하고, Claude Code 분석 요청을 조립·전달·결과 수집하며, 태그·점수·프롬프트 스니펫을 축적하는 메인 작업 공간 |
 | **진입 경로** | 로그인 성공 후 자동 이동, 헤더 "레퍼런스 라이브러리" 클릭 |
-| **사용자 행동** | URL 붙여넣기 또는 이미지 파일 드래그 드롭 → 제품이 "Claude Code 분석 요청 프롬프트" 자동 조립·클립보드 복사 → 안나가 Claude Code CLI로 이동해 이미지+프롬프트 함께 붙여넣어 분석 요청 → 응답(6-key JSON) 복사 → 제품의 paste 폼에 붙여넣음 → Zod 검증·저장 → 점수/태그/스니펫 입력(tool·language 메타 지정) → [copy prompt]로 MJ(영어) 또는 NBP(한국어)에 붙여넣기 |
-| **주요 기능** | - IG/Pinterest/YouTube/Are.na URL 입력 + 이미지 drag-drop 영역<br>- **[Claude Code 분석 요청 복사]** 버튼: 드롭 즉시 제품이 6차원 분석용 system/user 프롬프트 템플릿을 조립해 클립보드로 복사 + "Claude Code에 이미지와 함께 붙여넣으세요" 가이드 표시<br>- **Claude Code 응답 paste 폼**: 6-key JSON 응답 붙여넣기 전용 textarea. Zod `tokenSchema.parse()` 검증 → 통과 시 `reference_tokens` 저장(`vision_model_version='claude-code'`), 실패 시 인라인 에러 + 재입력<br>- **수동 6필드 입력 폴백**: Claude Code 쓰지 않고 직접 채우기 원할 때(6개 textarea, `vision_model_version='manual'`)<br>- 레퍼런스 카드 그리드 (썸네일·토큰·점수·태그 요약)<br>- 1~10 점수 입력, 카테고리/무드/색감/용도 태그 추가<br>- 프롬프트 스니펫 텍스트 필드 (여러 버전 저장 가능, 각 스니펫에 **tool(midjourney|nano-banana)·language(en|ko)** 필수 선택)<br>- **[copy prompt]** 버튼 (클립보드 복사, 스니펫의 tool·language가 헤더 배지로 노출)<br>- 레퍼런스 카드 클릭 시 레퍼런스 상세 페이지 이동 |
+| **사용자 행동** | URL 붙여넣기 또는 이미지 파일 드래그 드롭 → 제품이 "Claude Code 분석 요청 프롬프트" 자동 조립·클립보드 복사 → 안나가 Claude Code CLI로 이동해 이미지+프롬프트 함께 붙여넣어 분석 요청 → 응답(6-key JSON) 복사 → 제품의 paste 폼에 붙여넣음 → Zod 검증·저장 → 점수/태그/스니펫 입력(tool 3종 · language 2종 메타 지정) → [copy prompt]로 선택 도구(MJ·NBP·Higgsfield)에 붙여넣기 |
+| **주요 기능** | - IG/Pinterest/YouTube/Are.na URL 입력 + 이미지 drag-drop 영역<br>- **[Claude Code 분석 요청 복사]** 버튼: 드롭 즉시 제품이 6차원 분석용 system/user 프롬프트 템플릿을 조립해 클립보드로 복사 + "Claude Code에 이미지와 함께 붙여넣으세요" 가이드 표시<br>- **Claude Code 응답 paste 폼**: 6-key JSON 응답 붙여넣기 전용 textarea. Zod `tokenSchema.parse()` 검증 → 통과 시 `reference_tokens` 저장(`source='claude-code'`), 실패 시 인라인 에러 + 재입력<br>- **수동 6필드 입력 폴백**: Claude Code 쓰지 않고 직접 채우기 원할 때(6개 textarea, `source='manual'`)<br>- 레퍼런스 카드 그리드 (썸네일·토큰·점수·태그 요약)<br>- 1~10 점수 입력, 카테고리/무드/색감/용도 태그 추가<br>- 프롬프트 스니펫 텍스트 필드 (여러 버전 저장 가능, 각 스니펫에 **tool(midjourney\|nano-banana\|higgsfield)·language(en\|ko)** 필수 선택 — 6 조합 자유 선택, 기본값 연동 후 override 허용)<br>- **[copy prompt]** 버튼 (클립보드 복사, 스니펫의 tool·language가 헤더 배지로 노출)<br>- 레퍼런스 카드 클릭 시 레퍼런스 상세 페이지 이동 |
 | **다음 이동** | 레퍼런스 카드 클릭 → 레퍼런스 상세 페이지, [copy prompt] → 클립보드 복사 완료 토스트 |
 
 ---
@@ -192,10 +196,10 @@ Prompt Studio v0.5 내비게이션
 
 | 항목 | 내용 |
 |------|------|
-| **역할** | **MJ 또는 NBP**에서 실제 실행한 프롬프트와 결과 이미지를 pair로 기록하고, 프롬프트 품질(self_rating)·이미지 품질(satisfaction)을 분리 측정해 성공 패턴을 축적하는 페이지 |
+| **역할** | **MJ · NBP · Higgsfield**에서 실제 실행한 프롬프트와 결과 이미지/영상 프레임을 pair로 기록하고, 프롬프트 품질(self_rating)·결과 품질(satisfaction)을 분리 측정해 성공 패턴을 축적하는 페이지 |
 | **진입 경로** | 헤더 "프롬프트 페어 로그" 클릭, 또는 레퍼런스 상세 페이지에서 [copy prompt] 후 이동 (Cmd+V 스마트 매칭으로 tool·language 자동 prefill) |
-| **사용자 행동** | tool 선택(MJ/NBP 토글) → 프롬프트 문구 입력 → 결과 이미지 업로드 → 프롬프트 자체 만족도(self_rating) + 이미지 만족도(satisfaction) 입력 → pair 저장. 기존 페어 목록에서 만족도·채택 수정 |
-| **주요 기능** | - **tool 토글** (Midjourney / Nano Banana Pro, 세션별 기본값 localStorage 기억)<br>- 프롬프트 텍스트 입력 필드 (MJ면 영어, NBP면 한국어 — language는 tool에 연동되나 수동 override 가능)<br>- 결과 이미지 업로드 (drag-drop, 한 프롬프트에 여러 이미지 연결 — MJ variations 또는 NBP 합성 iteration)<br>- **프롬프트 자체 만족도** (1~5, `self_rating`, "이 프롬프트가 내 머릿속 의도를 얼마나 담았나")<br>- **이미지 결과 만족도** (1~5, `satisfaction`)<br>- is_final_pick pinned toggle (최종 채택 여부)<br>- 세션별 이터레이션 누적 카운트 자동 기록<br>- 저장된 페어 목록 (시간 역순, tool·최종채택·만족도 다중 필터)<br>- **[페어 저장]** 버튼 |
+| **사용자 행동** | tool 선택(MJ·NBP·Higgsfield 3-way 토글) + language 선택(en·ko 2-way 토글) → 프롬프트 문구 입력 → 결과 파일 업로드 → 프롬프트 자체 만족도(self_rating) + 결과 만족도(satisfaction) 입력 → pair 저장. 기존 페어 목록에서 만족도·채택 수정 |
+| **주요 기능** | - **tool 토글** (Midjourney · Nano Banana Pro · Higgsfield, 세션별 기본값 localStorage 기억)<br>- **language 토글** (en · ko, tool 선택 시 기본값 연동: MJ→en, NBP→ko, Higgsfield→en, 수동 override 가능 — 6 조합 전부 저장 가능)<br>- 프롬프트 텍스트 입력 필드 (tool·language에 맞춰 placeholder 분기 — Higgsfield면 "dolly in, tracking shot 등 영상 용어 사용 권장" 힌트)<br>- 결과 파일 업로드 (drag-drop, 한 프롬프트에 여러 파일 연결 — MJ variations · NBP iteration · Higgsfield 영상 세그먼트/썸네일)<br>- **프롬프트 자체 만족도** (1~5, `self_rating`, "이 프롬프트가 내 머릿속 의도를 얼마나 담았나")<br>- **결과 만족도** (1~5, `satisfaction`)<br>- is_final_pick pinned toggle (최종 채택 여부)<br>- 세션별 이터레이션 누적 카운트 자동 기록<br>- 저장된 페어 목록 (시간 역순, tool 3종 + language 2종 + 최종채택 + 만족도 다중 필터)<br>- **[페어 저장]** 버튼 |
 | **다음 이동** | 저장 완료 → 목록 갱신. 페어 클릭 → 토큰 diff 페이지 (V1.5 연결) |
 
 ---
@@ -236,8 +240,8 @@ Prompt Studio v0.5 내비게이션
 |------|------|
 | **역할** | 저장된 레퍼런스의 스타일/감도를 새 주제에 적용한 **Claude Code 요청 문장을 클라이언트 템플릿 엔진으로 조립**해 클립보드에 제공. 안나가 Claude Code CLI에서 후보 3개를 받아 페어 로그로 가져가는 창작 보조 페이지 |
 | **진입 경로** | 헤더 "리믹스 요청 생성" 클릭, 또는 레퍼런스 상세 페이지의 "리믹스" 버튼 클릭 |
-| **사용자 행동** | 기준 레퍼런스 선택 → tool 확인/변경(기본은 레퍼런스의 최근 프롬프트 tool) → 새 주제/주요 변경 사항 입력 → 제품이 조립한 요청 문장 확인 → **[Claude Code로 요청 복사]** → 안나가 Claude Code에서 후보 3개 받아 마음에 드는 것 복사 → 페어 로그에 붙여넣기 (source='remix'로 저장) |
-| **주요 기능** | - 기준 레퍼런스 선택 (라이브러리에서 검색·선택)<br>- **tool 토글** (Midjourney / Nano Banana Pro, 기준 레퍼런스의 최근 성공 프롬프트 tool을 기본값으로 제안)<br>- "이 느낌 × 새 주제" 자연어 입력 필드<br>- **요청 문장 실시간 프리뷰**: 기준 레퍼런스의 6차원 토큰(영어) + 새 주제 + tool별 템플릿 조합 결과를 실시간 표시<br>  - MJ 템플릿: "Generate 3 Midjourney prompts in English based on these dimensions: {tokens}. New subject: {theme}. Use Midjourney syntax (`--ar`, `--style`, etc.)"<br>  - NBP 템플릿: "다음 6차원 분석을 토대로 나노바나나 프롬프트 3개를 한국어로 생성해주세요: {tokens}. 새 주제: {theme}. 배경·피사체·조명·분위기를 명시적으로 서술"<br>- **[Claude Code로 요청 복사]** 버튼 (클립보드)<br>- 안나가 페어 로그로 돌아와 붙여넣을 때 `source='remix'` 자동 태깅 |
+| **사용자 행동** | 기준 레퍼런스 선택 → tool 확인/변경(MJ·NBP·Higgsfield, 기본은 레퍼런스의 최근 프롬프트 tool) → language 확인/변경(en·ko, 기본은 tool 연동) → 새 주제/주요 변경 사항 입력 → 제품이 조립한 요청 문장 확인 → **[Claude Code로 요청 복사]** → 안나가 Claude Code에서 후보 3개 받아 마음에 드는 것 복사 → 페어 로그에 붙여넣기 (source='remix'로 저장) |
+| **주요 기능** | - 기준 레퍼런스 선택 (라이브러리에서 검색·선택)<br>- **tool 3-way 토글** (Midjourney · Nano Banana Pro · Higgsfield, 기준 레퍼런스의 최근 성공 프롬프트 tool을 기본값으로 제안)<br>- **language 2-way 토글** (en · ko, tool 선택 시 기본값 연동, 수동 override 가능 → 6 조합 자유)<br>- "이 느낌 × 새 주제" 자연어 입력 필드<br>- **요청 문장 실시간 프리뷰**: 기준 레퍼런스의 6차원 토큰(영어) + 새 주제 + `tool×language` 6 템플릿 중 선택 조합 결과를 실시간 표시<br>  - **MJ-en**: "Generate 3 Midjourney prompts in English based on these dimensions: {tokens}. New subject: {theme}. Use Midjourney syntax (`--ar`, `--style raw`, etc.). Return 3 numbered options."<br>  - **MJ-ko**: "다음 6차원을 토대로 Midjourney 프롬프트 후보 3개를 한국어로 제시: {tokens}. 새 주제: {theme}. 각 후보에 `--ar` 등 MJ 파라미터 영어로 병기."<br>  - **NBP-ko**: "다음 6차원 분석을 토대로 나노바나나 프롬프트 3개를 한국어로 생성해주세요: {tokens}. 새 주제: {theme}. 배경·피사체·조명·분위기를 명시적으로 서술."<br>  - **NBP-en**: "Generate 3 Nano Banana Pro prompts in English based on these dimensions: {tokens}. New subject: {theme}. Describe background, subject, lighting, mood explicitly."<br>  - **Higgsfield-en** (영상 우선): "Generate 3 Higgsfield prompts in English for video/motion generation. Base dimensions: {tokens}. New subject: {theme}. Use short imperative commands. Separate image layout from motion — specify camera move (e.g., dolly in, tracking shot, slow motion), subject action, and verb per beat. Avoid descriptive paragraphs."<br>  - **Higgsfield-ko**: "Higgsfield 프롬프트 3개를 한국어로 생성. 영어 촬영 용어(dolly in, tracking shot, slow motion 등)는 그대로 유지. 6차원: {tokens}. 새 주제: {theme}. 카메라 무브·주체 동작·강한 동사를 각 비트에 명시. 설명적 문단 지양."<br>- **[Claude Code로 요청 복사]** 버튼 (클립보드)<br>- 안나가 페어 로그로 돌아와 붙여넣을 때 `source='remix'` 자동 태깅 |
 | **다음 이동** | 복사 후 프롬프트 페어 로그 페이지로 이동 유도 (tool·language·기준 레퍼런스 ID prefill) |
 
 ---
