@@ -5,7 +5,8 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { fetchOgMeta, fetchImageAsBlob } from "@/lib/scrape/og-meta";
 import { uploadReferenceThumbnail } from "@/lib/storage/upload";
-import { tokenSchema, type Token } from "@/lib/schemas/tokens";
+import { getSignedThumbnailUrl } from "@/lib/storage/signed-url";
+import { tokenSchema, type Token, TOKEN_KEYS } from "@/lib/schemas/tokens";
 
 /**
  * Task 007 Server Actions — 레퍼런스 생성 2 경로 (URL / 이미지 직접).
@@ -290,4 +291,110 @@ export async function saveReferenceTokens(
     referenceTokenId: inserted.id,
     source,
   };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Task 010 — 레퍼런스 카드 그리드 조회
+// ═══════════════════════════════════════════════════════════════════════════
+
+export type ReferenceCardData = {
+  id: string;
+  sourceUrl: string | null;
+  thumbnailUrl: string | null; // Supabase Storage 객체 경로
+  signedThumbnailUrl: string | null; // 1시간 TTL signed URL (null = 미설정 또는 발급 실패)
+  favoriteScore: number | null;
+  notes: string | null;
+  uploadedAt: string;
+  tokens: Token | null; // 활성 토큰 (미분석 시 null)
+  tags: { id: string; label: string; kind: "category" | "mood" | "color" | "purpose" }[];
+};
+
+export type ListReferenceCardsResult =
+  | { ok: true; cards: ReferenceCardData[]; totalCount: number }
+  | { ok: false; error: string };
+
+export async function listReferenceCards(
+  limit = 50,
+  offset = 0,
+): Promise<ListReferenceCardsResult> {
+  const supabase = await createClient();
+  const { data: claims } = await supabase.auth.getClaims();
+  const userId = claims?.claims?.sub;
+  if (!userId) {
+    return { ok: false, error: "로그인이 필요합니다" };
+  }
+
+  const { count } = await supabase
+    .from("references")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId);
+
+  const { data, error } = await supabase
+    .from("references")
+    .select(
+      `
+      id,
+      source_url,
+      thumbnail_url,
+      favorite_score,
+      notes,
+      uploaded_at,
+      reference_tokens(tokens, is_active),
+      tags(id, tag, tag_kind)
+      `,
+    )
+    .eq("user_id", userId)
+    .order("uploaded_at", { ascending: false })
+    .range(offset, offset + limit - 1);
+
+  if (error) {
+    return { ok: false, error: `카드 조회 실패: ${error.message}` };
+  }
+
+  const cards: ReferenceCardData[] = await Promise.all(
+    (data ?? []).map(async (row) => {
+      const activeTokenRow = (row.reference_tokens ?? []).find(
+        (rt: { is_active: boolean; tokens: unknown }) => rt.is_active,
+      );
+      const tokens = activeTokenRow
+        ? normalizeTokens(activeTokenRow.tokens)
+        : null;
+
+      const signed = row.thumbnail_url
+        ? await getSignedThumbnailUrl(row.thumbnail_url)
+        : null;
+
+      return {
+        id: row.id,
+        sourceUrl: row.source_url,
+        thumbnailUrl: row.thumbnail_url,
+        signedThumbnailUrl: signed,
+        favoriteScore: row.favorite_score,
+        notes: row.notes,
+        uploadedAt: row.uploaded_at,
+        tokens,
+        tags: (row.tags ?? []).map(
+          (t: { id: string; tag: string; tag_kind: ReferenceCardData["tags"][number]["kind"] }) => ({
+            id: t.id,
+            label: t.tag,
+            kind: t.tag_kind,
+          }),
+        ),
+      };
+    }),
+  );
+
+  return { ok: true, cards, totalCount: count ?? 0 };
+}
+
+function normalizeTokens(raw: unknown): Token | null {
+  if (!raw || typeof raw !== "object") return null;
+  const rec = raw as Record<string, unknown>;
+  const result: Record<string, string> = {};
+  for (const key of TOKEN_KEYS) {
+    const v = rec[key];
+    if (typeof v !== "string" || v.length === 0) return null;
+    result[key] = v;
+  }
+  return result as Token;
 }
