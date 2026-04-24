@@ -62,22 +62,28 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
 
 ### D1 — 스켈레톤
 
-- [ ] 대기 **Task 001: Next.js 15 프로젝트 스켈레톤 세팅** — 우선순위
-  - 목표: Next.js 15 (App Router) + TypeScript 5.6+ + React 19 + Tailwind v4 + shadcn/ui 초기 세팅
+- [ ] 대기 **Task 001: Supabase Next.js 스타터킷 정리 + 기반 확장** — 우선순위
+  - 목표: 이미 설치된 Supabase Next.js 공식 스타터(Next.js 15 App Router + TypeScript 5 + React 19 + **Tailwind v3.4** + shadcn/ui new-york) 기반 위에 **불필요 스타터 잔재 제거 + Prompt Studio 전용 의존성 추가**
   - 참조 PRD 기능: 전체 인프라 기반
+  - 전제: 루트에 `package.json`·`tailwind.config.ts`·`components.json`·`proxy.ts`·`lib/supabase/{client,server,proxy}.ts`가 이미 존재. **새 `create-next-app` 실행 금지** — 기존 스타터 구성이 공식 source of truth.
   - 완료 기준:
-    - `npm create next-app` 기반 프로젝트 초기화 완료
-    - shadcn/ui 초기 설치 (button, card, input, dialog, toast 등 기본 컴포넌트)
-    - Tailwind v4 + Lucide React 설치
-    - React Hook Form + Zod 설치
-    - `npm run dev` 로 localhost:3000 정상 구동
+    - **스타터 잔재 제거** (starter-cleaner 에이전트 활용 권장):
+      - `app/instruments/` 디렉터리 삭제 (스타터 예제)
+      - `app/auth/sign-up/`, `app/auth/sign-up-success/` 삭제 (단일 계정 전용 → 회원가입 UI 불필요)
+      - `app/auth/update-password/`, `app/auth/forgot-password/`, `app/auth/error/` 삭제 (단일 계정 관리용 페이지)
+      - 루트 `README.md`는 스타터 문서 → Task 030에서 Prompt Studio 전용으로 대체 예정이므로 이 Task에서는 건드리지 않음
+      - `app/page.tsx`·`app/protected/page.tsx`의 스타터 컨텐츠는 삭제하되 **파일 자체는 유지** (레이아웃 구조 보존)
+    - **Next.js 15 `cacheComponents: true` 취급**: 공식 Supabase 스타터의 기본값이므로 **그대로 유지**. 단 이후 Task에서 새 페이지를 만들 때 dynamic API(`cookies()`/`headers()`/`searchParams`) 사용 코드는 반드시 `<Suspense>` 경계 안에 둘 것. `app/page.tsx`의 기존 Suspense 패턴 참고.
+    - shadcn/ui 기본 컴포넌트 추가 설치 (`npx shadcn@latest add button card input dialog sonner badge dropdown-menu form label textarea select slider` — sonner가 shadcn/ui 공식 toast 대체)
+    - 추가 의존성: `react-hook-form` + `zod` + `@hookform/resolvers` 설치
+    - `npm run dev` 로 localhost:3000 정상 구동 + `/auth/login` 접근 확인 (스타터 로그인 페이지는 유지, Task 006에서 재작성)
     - 기본 레이아웃 (헤더 골격 포함) 표시
-    - **디자인 토큰 정의** (DESIGN-8 autoplan 반영): `app/globals.css`에 6차원 semantic color + 계층형 radius 토큰 등록
-      - `--token-subject`, `--token-style`, `--token-lighting`, `--token-composition`, `--token-medium`, `--token-mood` (각 oklch 기반 hue 1개)
+    - **디자인 토큰 정의** (DESIGN-8 autoplan 반영): `app/globals.css`의 기존 `@layer base :root` HSL 변수 뒤에 6차원 semantic color + 계층형 radius 토큰 추가하고, `tailwind.config.ts`의 `theme.extend.colors` + `theme.extend.borderRadius`에 매핑
+      - `--token-subject`, `--token-style`, `--token-lighting`, `--token-composition`, `--token-medium`, `--token-mood` (각 HSL 기반 hue 1개, 스타터가 HSL 포맷이므로 일관성 유지)
       - `--ref-card-radius: 16px`, `--chip-radius: 8px`, `--dialog-radius: 12px`
       - shadcn/ui 기본값 + 위 커스텀을 묶어 디자인 토큰 테이블을 `docs/design-tokens.md`에 1페이지로 문서화
     - **CI 환경변수 가드** (ENG-17 autoplan 반영): `package.json` scripts에 `"check:secrets": "! grep -rE 'NEXT_PUBLIC_(ANTHROPIC|SUPABASE_SERVICE|VOYAGE)_API' src app lib || exit 1"` 추가. pre-commit 또는 CI에서 실행해 API 키 클라이언트 노출 방어
-  - 예상 소요: 4시간
+  - 예상 소요: 4시간 (스타터 정리 1h + 의존성 추가 30m + 디자인 토큰 1.5h + 검증 1h)
   - 의존: Phase 0 완료
 
 - [ ] 대기 **Task 002: Supabase 프로젝트 + pgvector 확장 활성화** — 우선순위
@@ -88,7 +94,7 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
     - `create extension if not exists vector;` 실행 확인
     - `references-thumbnails`, `pair-results` 두 개 Storage 버킷 생성 — **둘 다 private bucket** (ENG-15 autoplan 반영)
     - 버킷 접근: `references.thumbnail_url`은 storage path로 저장, 렌더링 시 Supabase client `createSignedUrl(path, 3600)`로 1시간 TTL signed URL 발급
-    - `.env.local` 에 환경변수 세팅 (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ANTHROPIC_API_KEY`, `VOYAGE_API_KEY`)
+    - `.env.local` 에 환경변수 세팅 (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ANTHROPIC_API_KEY`, `VOYAGE_API_KEY`)
     - `@supabase/supabase-js` 설치 + 클라이언트 유틸 (`lib/supabase/client.ts`, `lib/supabase/server.ts`) 작성
   - 예상 소요: 2시간
   - 의존: Task 001
@@ -214,7 +220,7 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
   - 참조 PRD 기능: 전체 V1 코어 배포 가능성 검증
   - 완료 기준:
     - Vercel 프로젝트 생성 + GitHub 레포 연동
-    - preview 환경변수 세팅 (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ANTHROPIC_API_KEY`)
+    - preview 환경변수 세팅 (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ANTHROPIC_API_KEY`)
     - Supabase Auth redirect URL에 Vercel preview 도메인 추가
     - preview URL에서 로그인 → URL 드롭 → Vision 분해 성공 1회 확인
     - 실패/경고 사항 `docs/baseline/preview-rehearsal.md`에 기록
@@ -402,7 +408,7 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
   - 참조 PRD 기능: 전체 V1 코어
   - 완료 기준:
     - Vercel 프로젝트 생성 + GitHub 연동
-    - 환경변수 세팅: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ANTHROPIC_API_KEY`, `VOYAGE_API_KEY`
+    - 환경변수 세팅: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ANTHROPIC_API_KEY`, `VOYAGE_API_KEY`
     - production URL에서 로그인 → 레퍼런스 드롭 → Vision 분해 → 페어 저장 end-to-end 동작
     - Supabase Auth redirect URL에 Vercel 도메인 추가
   - **이 Task는 D13 영상 출시와 같은 날**. 영상이 먼저, 도구는 당일 중 배포 성공하면 됨.

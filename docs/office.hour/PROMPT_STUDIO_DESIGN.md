@@ -308,7 +308,7 @@ Phase 3.5 subagent 의견 반영해 **"Prompt Studio v0.5"** 로 재프레이밍
 **Supabase 테이블 개략 (ERD 1장 분량)**:
 - `references` (id, source_url, thumbnail_url, uploaded_at, user_id, favorite_score, notes)
 - `reference_tokens` (reference_id FK, tokens jsonb, embedding vector(1024), vision_model_version, created_at)
-- `tags` (reference_id FK, tag, tag_kind [category/mood/color])
+- `tags` (id, reference_id FK, tag, tag_kind [category/mood/color/purpose]) — PRD가 source of truth. `purpose`는 "용도" 카테고리 (예: "제품 샷", "공간 무드", "인물 배경")
 - `prompts` (id, reference_id FK NULL, prompt_text, source [copied/modified/remix], created_at)
 - `pairs` (id, prompt_id FK, result_image_url, satisfaction [null/1-5], is_final_pick bool, iteration_count_cumulative, session_id, created_at)
 

@@ -286,8 +286,9 @@ Prompt Studio v0.5 내비게이션
 
 ### 스타일링 & UI
 
-- **TailwindCSS v4** (설정 파일 없는 새로운 CSS 엔진) — 유틸리티 CSS 프레임워크
-- **shadcn/ui** — 고품질 React 컴포넌트 라이브러리 (드래그 드롭, 카드, 배지 등)
+- **TailwindCSS v3.4** (Supabase Next.js 공식 스타터킷 기본 구성, `tailwind.config.ts` + `@tailwind` directives + HSL CSS 변수) — 유틸리티 CSS 프레임워크
+- **shadcn/ui** (style: new-york, baseColor: neutral, cssVariables: true) — 고품질 React 컴포넌트 라이브러리 (드래그 드롭, 카드, 배지 등)
+- **tailwindcss-animate** — shadcn/ui 애니메이션 플러그인 (스타터킷 기본 포함)
 - **Lucide React** — 아이콘 라이브러리
 
 ### 폼 & 검증
