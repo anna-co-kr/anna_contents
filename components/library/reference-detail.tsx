@@ -17,6 +17,7 @@ import { TagPopover } from "@/components/library/tag-popover";
 import { ReferenceEditDialog } from "@/components/library/reference-edit-dialog";
 import { ManualTokensDialog } from "@/components/library/manual-tokens-dialog";
 import { DeleteReferenceButton } from "@/components/library/delete-reference-button";
+import { SnippetList } from "@/components/library/snippet-list";
 
 const TOKEN_COLOR_CLASS: Record<(typeof TOKEN_KEYS)[number], string> = {
   subject: "border-token-subject/40 bg-token-subject/10 text-token-subject",
@@ -145,7 +146,10 @@ export async function ReferenceDetail({ referenceId }: { referenceId: string }) 
           <section className="space-y-2 rounded-ref-card border border-border p-4">
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-medium">6차원 토큰</h2>
-              <ManualTokensDialog referenceId={detail.id} />
+              <ManualTokensDialog
+                referenceId={detail.id}
+                initialTokens={detail.tokens}
+              />
             </div>
             {detail.tokens ? (
               <dl className="space-y-1.5 text-xs">
@@ -203,38 +207,14 @@ export async function ReferenceDetail({ referenceId }: { referenceId: string }) 
             )}
           </section>
 
-          {/* 스니펫 카운트 + 전체 편집 Dialog 연결 */}
-          <section className="space-y-2 rounded-ref-card border border-border p-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-medium">프롬프트 스니펫</h2>
-              <span className="text-xs text-muted-foreground">
-                {snippets.ok ? `${snippets.snippets.length}개` : "—"}
-              </span>
-            </div>
-            <p className="text-[11px] text-muted-foreground">
-              우측 ✏️ 편집 버튼에서 스니펫을 추가·복사·삭제할 수 있어요
-            </p>
-            {snippets.ok && snippets.snippets.length > 0 && (
-              <ul className="space-y-1 pt-1.5">
-                {snippets.snippets.slice(0, 3).map((s) => (
-                  <li
-                    key={s.id}
-                    className="truncate rounded-md border border-border bg-muted/30 px-2 py-1 font-mono text-[11px]"
-                    title={s.text}
-                  >
-                    <span className="mr-1 font-sans text-muted-foreground">
-                      [{s.tool}·{s.language}]
-                    </span>
-                    {s.text}
-                  </li>
-                ))}
-                {snippets.snippets.length > 3 && (
-                  <li className="text-[10px] text-muted-foreground">
-                    외 {snippets.snippets.length - 3}개 (편집 Dialog에서 전체 보기)
-                  </li>
-                )}
-              </ul>
-            )}
+          {/* 스니펫 전체 CRUD (PRD § 레퍼런스 상세 페이지) */}
+          <section className="space-y-3 rounded-ref-card border border-border p-4">
+            <h2 className="text-sm font-medium">프롬프트 스니펫</h2>
+            <SnippetList
+              referenceId={detail.id}
+              loadMode="mount"
+              initialSnippets={snippets.ok ? snippets.snippets : undefined}
+            />
           </section>
         </aside>
       </div>

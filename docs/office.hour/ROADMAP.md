@@ -323,6 +323,16 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
   - 실제 소요: 약 1.5시간
   - 의존: Task 011, 012
 
+- [x] 완료 **F002 PRD gap 보완 (2026-04-25)**
+  - 대상 PRD 라인: PRD § 레퍼런스 상세 페이지 line 188 "6차원 토큰 값 확인 및 수동 편집" · "프롬프트 스니펫 목록 (버전별 나열, 추가·삭제)" · "[copy prompt] 버튼 (스니펫별)"
+  - [x] **Gap #1**: `ManualTokensDialog`에 `initialTokens?: Token | null` prop 추가 — 상세 페이지 재편집 시 기존 6개 값을 input에 prefill. `useEffect`로 Dialog 열릴 때마다 초기값 동기화. 저장 성공 시 prefill 모드(재편집)에선 값 유지, 빈 모드(신규)에선 EMPTY로 리셋.
+  - [x] **Gap #2**: `reference-edit-dialog.tsx`의 `SnippetSection` 로직을 `components/library/snippet-list.tsx` 공용 컴포넌트로 추출. `loadMode="mount"|"defer"` + `initialSnippets` + `shouldLoad` prop으로 두 사용처(상세 페이지·편집 Dialog) 모두 지원. 상세 페이지 우측 "프롬프트 스니펫" 섹션을 미리보기 3개 → 전체 CRUD(add/copy/delete)로 교체.
+  - 테스트 (`tests/e2e/task-013-gaps.spec.ts` 2/2 통과, 2회 연속 stable):
+    - [x] 수동 6필드 Dialog가 ceramic teapot/minimalist japanese 등 6개 값을 prefill 하는지 확인
+    - [x] 상세 페이지에서 Dialog 경유 없이 스니펫 추가 → copy 토스트 → 직접 삭제까지 full CRUD
+  - 검증: Playwright 27/27, vitest 57/57, lint/tsc/build 모두 그린
+  - 실제 소요: 약 40분
+
 ## Phase 2: Week 2 (D8-D14) — F003 완성 + D10 게이트 + D13 출시
 
 > **이 주차의 유일한 목표는 D13 영상 출시**. 도구는 V1 코어 3개 기능만 되면 충분.

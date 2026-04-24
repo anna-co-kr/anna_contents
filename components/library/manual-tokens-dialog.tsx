@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, AlertCircle } from "lucide-react";
 import { TOKEN_KEYS, tokenSchema, type Token } from "@/lib/schemas/tokens";
@@ -39,18 +39,34 @@ export type ManualTokensDialogProps = {
   referenceId: string;
   trigger?: React.ReactNode;
   onSaved?: () => void;
+  /**
+   * 상세 페이지에서 "재편집" 모드로 열 때 기존 6차원 값을 prefill.
+   * 없으면 빈 폼으로 시작 (신규 입력).
+   */
+  initialTokens?: Token | null;
 };
 
 export function ManualTokensDialog({
   referenceId,
   trigger,
   onSaved,
+  initialTokens,
 }: ManualTokensDialogProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [values, setValues] = useState(EMPTY_TOKENS);
+  const [values, setValues] = useState(
+    initialTokens ? { ...initialTokens } : EMPTY_TOKENS,
+  );
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  // Dialog가 열릴 때마다 initialTokens를 다시 반영 (외부에서 refresh된 값도 동기화)
+  useEffect(() => {
+    if (open) {
+      setValues(initialTokens ? { ...initialTokens } : EMPTY_TOKENS);
+      setError(null);
+    }
+  }, [open, initialTokens]);
 
   const handleSave = () => {
     setError(null);
@@ -74,7 +90,8 @@ export function ManualTokensDialog({
         return;
       }
       setOpen(false);
-      setValues(EMPTY_TOKENS);
+      // prefill 모드(재편집)에선 방금 저장한 값을 유지 — 다시 열 때 useEffect가 최신 initialTokens로 덮어씀
+      if (!initialTokens) setValues(EMPTY_TOKENS);
       onSaved?.();
       router.refresh();
     });
