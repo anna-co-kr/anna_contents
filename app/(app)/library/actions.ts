@@ -5,6 +5,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { fetchOgMeta, fetchImageAsBlob } from "@/lib/scrape/og-meta";
 import { uploadReferenceThumbnail } from "@/lib/storage/upload";
+import { tokenSchema, type Token } from "@/lib/schemas/tokens";
 
 /**
  * Task 007 Server Actions — 레퍼런스 생성 2 경로 (URL / 이미지 직접).
@@ -191,4 +192,102 @@ function extensionFromContentType(contentType: string): string {
   if (contentType.includes("webp")) return "webp";
   if (contentType.includes("gif")) return "gif";
   return "jpg";
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Task 008 — reference_tokens 저장 (Claude Code paste 또는 수동 입력)
+// ═══════════════════════════════════════════════════════════════════════════
+
+const saveTokensInputSchema = z.object({
+  referenceId: z.string().uuid("referenceId는 UUID여야 합니다"),
+  tokens: tokenSchema,
+  source: z.enum(["claude-code", "manual"]),
+});
+
+export type SaveTokensInput = z.infer<typeof saveTokensInputSchema>;
+
+export type SaveTokensResult =
+  | { ok: true; referenceTokenId: string; source: "claude-code" | "manual" }
+  | { ok: false; error: string };
+
+/**
+ * 6차원 토큰을 저장. 기존 active 레코드는 is_active=false로 전환하고
+ * 새 레코드를 is_active=true로 insert (이력 보존 구조, ENG-1).
+ *
+ * source:
+ *   - 'claude-code': 안나가 Claude Code 응답을 paste 폼에 붙여넣어 parser 통과한 경우
+ *   - 'manual': 수동 6필드 입력 dialog 경로
+ */
+export async function saveReferenceTokens(
+  rawInput: unknown,
+): Promise<SaveTokensResult> {
+  const parsed = saveTokensInputSchema.safeParse(rawInput);
+  if (!parsed.success) {
+    const issue = parsed.error.issues[0];
+    return {
+      ok: false,
+      error: `입력 검증 실패 [${issue.path.join(".")}]: ${issue.message}`,
+    };
+  }
+
+  const { referenceId, tokens, source } = parsed.data;
+
+  const supabase = await createClient();
+  const { data: claims } = await supabase.auth.getClaims();
+  const userId = claims?.claims?.sub;
+  if (!userId) {
+    return { ok: false, error: "로그인이 필요합니다" };
+  }
+
+  // 1) 소유권 확인 (RLS가 동일 조건 강제하지만 explicit check로 에러 메시지 개선)
+  const { data: ref } = await supabase
+    .from("references")
+    .select("id")
+    .eq("id", referenceId)
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (!ref) {
+    return { ok: false, error: "레퍼런스를 찾을 수 없거나 권한이 없습니다" };
+  }
+
+  // 2) 기존 active 레코드 is_active=false로 전환
+  const { error: deactivateError } = await supabase
+    .from("reference_tokens")
+    .update({ is_active: false })
+    .eq("reference_id", referenceId)
+    .eq("is_active", true);
+  if (deactivateError) {
+    return {
+      ok: false,
+      error: `기존 활성 레코드 전환 실패: ${deactivateError.message}`,
+    };
+  }
+
+  // 3) 새 reference_tokens insert (is_active=true, source 명시)
+  const { data: inserted, error: insertError } = await supabase
+    .from("reference_tokens")
+    .insert({
+      user_id: userId,
+      reference_id: referenceId,
+      tokens: tokens as unknown as Token & Record<string, unknown>,
+      source,
+      is_active: true,
+    })
+    .select("id")
+    .single();
+
+  if (insertError || !inserted) {
+    return {
+      ok: false,
+      error: `토큰 저장 실패: ${insertError?.message ?? "unknown"}`,
+    };
+  }
+
+  revalidatePath("/library");
+  revalidatePath(`/library/${referenceId}`);
+  return {
+    ok: true,
+    referenceTokenId: inserted.id,
+    source,
+  };
 }

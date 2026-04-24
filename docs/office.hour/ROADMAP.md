@@ -195,7 +195,7 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
   - 예상 소요: 4시간
   - 의존: Task 003, 005, 006
 
-- [ ] 대기 **Task 008: F001 Claude Code 분석 연동 — 요청 프롬프트 빌더 + 응답 paste 검증 UI**
+- [x] 완료 **Task 008: F001 Claude Code 분석 연동 — 요청 프롬프트 빌더 + 응답 paste 검증 UI** (2026-04-24)
   - 목표: 외부 API 호출 없이, 이미지 드롭 → Claude Code용 분석 요청 프롬프트 자동 조립 → 안나가 Claude Code에서 분석 → 응답 paste → Zod 검증 → `reference_tokens` 저장
   - 참조 PRD 기능: F001 (PRD 54), Claude Code 컴패니언 모델
   - 완료 기준:
@@ -687,7 +687,7 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
 ## 진행 상태 요약
 
 - **Phase 0 (선행)**: 0/3 Task 완료
-- **Phase 1 (Week 1, D1-D7)**: 7/13 Task 완료 (Task 001 ✓ · 002 ✓ · 003 ✓ · 004 ✓ · 005 ✓ · 006 ✓ · 007 ✓ · Task 009 B 재설계로 Task 008에 흡수 삭제)
+- **Phase 1 (Week 1, D1-D7)**: 8/13 Task 완료 (Task 001~008 ✓ · Task 009 B 재설계로 Task 008에 흡수 삭제) — **V1 코어 F001 완성**
 - **Phase 2 (Week 2, D8-D14)**: 0/9 Task 완료 (Task 016-1 ops.md 추가, D10 게이트 결과에 따라 Task 수 변동)
 - **Phase 3 (Week 3, D15-D21)**: 0/11 Task 완료 (Task 030-1 백업 스크립트 추가, V1.5 기능 선택에 따라 변동)
 

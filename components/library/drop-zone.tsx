@@ -3,15 +3,18 @@
 import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useDropzone, type FileRejection } from "react-dropzone";
-import { UploadCloud, Link2, CheckCircle2, AlertCircle } from "lucide-react";
+import { UploadCloud, Link2, CheckCircle2, AlertCircle, Copy, Sparkles } from "lucide-react";
 import { resizeImage, formatBytes } from "@/lib/image/resize";
 import {
   createReferenceFromImage,
   createReferenceFromUrl,
 } from "@/app/(app)/library/actions";
+import { buildAnalysisRequest } from "@/lib/claude-code/prompt-builder";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { AnalysisPasteForm } from "@/components/library/analysis-paste-form";
+import { ManualTokensDialog } from "@/components/library/manual-tokens-dialog";
 
 type Stage =
   | { kind: "idle" }
@@ -24,6 +27,8 @@ type Stage =
       existing: boolean;
       source: "url" | "image";
       hint: string;
+      sourceUrl?: string | null;
+      fileName?: string | null;
     }
   | { kind: "error"; message: string };
 
@@ -61,9 +66,10 @@ export function DropZone() {
         referenceId: result.referenceId,
         existing: result.existing,
         source: "url",
+        sourceUrl: url.trim(),
         hint: result.existing
-          ? "이미 라이브러리에 있는 URL입니다. 기존 항목을 엽니다."
-          : "레퍼런스가 저장되었습니다. 다음 단계 — Claude Code에 분석 요청을 복사해주세요 (Task 008에서 구현 예정).",
+          ? "이미 라이브러리에 있는 URL입니다. 기존 항목에 토큰을 덮어쓰거나 새로 저장할 수 있습니다."
+          : "레퍼런스가 저장되었습니다. 이제 Claude Code로 6차원 분석을 받아오세요.",
       });
       setUrl("");
       router.refresh();
@@ -118,7 +124,8 @@ export function DropZone() {
         referenceId: result.referenceId,
         existing: false,
         source: "image",
-        hint: `이미지가 저장되었습니다 (${formatBytes(resized.bytes)}, ${resized.width}x${resized.height}). 다음 단계 — Claude Code에 분석 요청을 복사해주세요 (Task 008에서 구현 예정).`,
+        fileName: file.name,
+        hint: `이미지가 저장되었습니다 (${formatBytes(resized.bytes)}, ${resized.width}x${resized.height}). 이제 Claude Code로 6차원 분석을 받아오세요.`,
       });
       router.refresh();
     },
@@ -197,9 +204,88 @@ export function DropZone() {
         </div>
       </div>
 
-      {stage.kind !== "idle" && (
-        <StageIndicator stage={stage} />
+      {stage.kind !== "idle" && <StageIndicator stage={stage} />}
+
+      {stage.kind === "success" && !stage.existing && (
+        <AnalysisSection
+          referenceId={stage.referenceId}
+          sourceUrl={stage.sourceUrl}
+          fileName={stage.fileName}
+        />
       )}
+    </div>
+  );
+}
+
+function AnalysisSection({
+  referenceId,
+  sourceUrl,
+  fileName,
+}: {
+  referenceId: string;
+  sourceUrl?: string | null;
+  fileName?: string | null;
+}) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyPrompt = async () => {
+    const prompt = buildAnalysisRequest({ sourceUrl, fileName });
+    try {
+      await navigator.clipboard.writeText(prompt);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    } catch {
+      // 비HTTPS·권한 거부 폴백 — textarea로 드러내기
+      const fallback = prompt;
+      const ta = document.createElement("textarea");
+      ta.value = fallback;
+      ta.style.position = "fixed";
+      ta.style.left = "-9999px";
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand("copy");
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2500);
+      } catch {
+        // 완전 실패: user에게 수동 복사 유도 (별도 dialog는 V1.5로 미룸)
+        window.prompt("Claude Code 분석 요청 프롬프트를 수동으로 복사하세요:", fallback);
+      } finally {
+        document.body.removeChild(ta);
+      }
+    }
+  };
+
+  return (
+    <div className="rounded-ref-card border border-border bg-accent/10 p-4 space-y-4">
+      <div className="flex items-start gap-2">
+        <Sparkles className="size-4 text-token-style shrink-0 mt-0.5" />
+        <div className="space-y-0.5">
+          <p className="text-sm font-medium">Claude Code로 6차원 분석 받기</p>
+          <p className="text-xs text-muted-foreground">
+            아래 버튼으로 요청 프롬프트를 복사 → Claude Code CLI에서 이미지와
+            함께 붙여넣고 JSON 응답을 받아 아래 폼에 다시 붙여넣으세요.
+          </p>
+        </div>
+      </div>
+
+      <Button
+        type="button"
+        size="sm"
+        variant="outline"
+        onClick={handleCopyPrompt}
+        className="gap-1.5"
+      >
+        <Copy className="size-3" />
+        {copied ? "복사 완료!" : "Claude Code 분석 요청 복사"}
+      </Button>
+
+      <AnalysisPasteForm referenceId={referenceId} />
+
+      <div className="flex items-center gap-2 pt-2 border-t border-border/50">
+        <p className="text-xs text-muted-foreground">Claude Code 안 쓰실 경우 →</p>
+        <ManualTokensDialog referenceId={referenceId} />
+      </div>
     </div>
   );
 }
