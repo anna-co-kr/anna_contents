@@ -2,12 +2,14 @@
 
 import { useEffect, useId, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import {
   Pencil,
   Loader2,
   AlertCircle,
   Trash2,
   Plus,
+  Copy,
 } from "lucide-react";
 import {
   updateReferenceScore,
@@ -16,6 +18,8 @@ import {
   listReferenceSnippets,
   type PromptSnippetData,
 } from "@/app/(app)/library/actions";
+import { copyWithFallback } from "@/lib/clipboard/copy-with-fallback";
+import { saveRecentCopiedPrompt } from "@/lib/storage/recent-prompt";
 import {
   DEFAULT_LANGUAGE_BY_TOOL,
   TOOL_DISPLAY_NAME,
@@ -278,6 +282,31 @@ function SnippetSection({
     });
   };
 
+  const handleCopy = async (snippet: PromptSnippetData) => {
+    try {
+      const outcome = await copyWithFallback(snippet.text);
+      saveRecentCopiedPrompt({
+        text: snippet.text,
+        referenceId,
+        promptId: snippet.id,
+        tool: snippet.tool,
+        language: snippet.language,
+      });
+      toast.success("프롬프트 복사 완료", {
+        description:
+          outcome === "clipboard"
+            ? "Cmd+V로 바로 붙여넣을 수 있어요"
+            : outcome === "exec"
+              ? "구형 환경에서 복사됨 (execCommand 폴백)"
+              : "수동 복사 창이 떴어요 — 직접 Ctrl+C 해주세요",
+      });
+    } catch (e) {
+      toast.error("복사 실패", {
+        description: (e as Error).message,
+      });
+    }
+  };
+
   return (
     <section className="space-y-3 border-t border-border pt-4">
       <div className="flex items-baseline justify-between">
@@ -325,9 +354,17 @@ function SnippetSection({
                 )}
                 <button
                   type="button"
+                  onClick={() => handleCopy(s)}
+                  aria-label="스니펫 복사"
+                  className="ml-auto flex size-5 items-center justify-center rounded-full text-muted-foreground hover:bg-accent hover:text-foreground"
+                >
+                  <Copy className="size-3" />
+                </button>
+                <button
+                  type="button"
                   onClick={() => handleDelete(s.id)}
                   aria-label="스니펫 삭제"
-                  className="ml-auto flex size-5 items-center justify-center rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                  className="flex size-5 items-center justify-center rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                 >
                   <Trash2 className="size-3" />
                 </button>

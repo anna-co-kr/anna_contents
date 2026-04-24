@@ -10,6 +10,7 @@ import {
   createReferenceFromUrl,
 } from "@/app/(app)/library/actions";
 import { buildAnalysisRequest } from "@/lib/claude-code/prompt-builder";
+import { copyWithFallback } from "@/lib/clipboard/copy-with-fallback";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -231,28 +232,12 @@ function AnalysisSection({
   const handleCopyPrompt = async () => {
     const prompt = buildAnalysisRequest({ sourceUrl, fileName });
     try {
-      await navigator.clipboard.writeText(prompt);
+      await copyWithFallback(prompt);
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
     } catch {
-      // 비HTTPS·권한 거부 폴백 — textarea로 드러내기
-      const fallback = prompt;
-      const ta = document.createElement("textarea");
-      ta.value = fallback;
-      ta.style.position = "fixed";
-      ta.style.left = "-9999px";
-      document.body.appendChild(ta);
-      ta.select();
-      try {
-        document.execCommand("copy");
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2500);
-      } catch {
-        // 완전 실패: user에게 수동 복사 유도 (별도 dialog는 V1.5로 미룸)
-        window.prompt("Claude Code 분석 요청 프롬프트를 수동으로 복사하세요:", fallback);
-      } finally {
-        document.body.removeChild(ta);
-      }
+      // copyWithFallback이 완전 실패하면 window.prompt까지 시도하므로 여기 오지 않음
+      setCopied(false);
     }
   };
 

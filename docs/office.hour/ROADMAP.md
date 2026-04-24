@@ -283,21 +283,24 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
   - 실제 소요: 약 2.5시간
   - 의존: Task 010
 
-- [ ] 대기 **Task 012: F002 [copy prompt] 버튼 + 클립보드 토스트 + 스마트 매칭 연동**
-  - 목표: 프롬프트 스니펫 클립보드 복사 + 완료 토스트 + Cmd+V 매칭을 위한 localStorage 기록
+- [x] 완료 **Task 012: F002 [copy prompt] 버튼 + 클립보드 토스트 + 스마트 매칭 연동**
+  - 목표: 프롬프트 스니펫 클립보드 복사 + 완료 토스트 + Cmd+V 매칭 기록
   - 참조 PRD 기능: F002 (PRD 56, 132)
   - 완료 기준:
-    - 각 스니펫 옆 `[copy prompt]` 버튼
-    - try/catch + `navigator.clipboard.writeText()` 호출
-    - **클립보드 실패 폴백** (ENG-9 autoplan 반영): 권한 거부 / 비HTTPS 환경에서 `<textarea>` 삽입 + `document.execCommand('copy')` 재시도. 두 경로 모두 실패 시 모달로 전체 텍스트 선택 가능한 readonly textarea 노출 + "수동으로 Cmd+C 해주세요" 안내
-    - **localStorage 기록** (DESIGN-5 Cmd+V 스마트 매칭 지원): 성공 시 `localStorage.promptStudio.recentCopiedPrompt = { text, referenceId, promptId, tool, language, copiedAt }` 저장 (tool·language 포함해 Task 014 페어 페이지가 tool 토글·language까지 prefill). 30분 후 자동 만료
-    - shadcn/ui toast로 "복사 완료" 노출
-  - 테스트 체크리스트 (Playwright MCP):
-    - [ ] 버튼 클릭 후 클립보드 내용 확인 (evaluate로 clipboard.readText)
-    - [ ] 토스트 노출 확인
-    - [ ] localStorage.promptStudio.recentCopiedPrompt 저장 확인
-    - [ ] 클립보드 권한 거부 시 폴백 모달 노출 확인
-  - 예상 소요: 1시간
+    - [x] 각 스니펫 옆 `[copy]` 버튼 (편집 Dialog 내부 스니펫 목록)
+    - [x] **3단 폴백** 공용 helper `lib/clipboard/copy-with-fallback.ts`:
+      - 1) `navigator.clipboard.writeText()` (보안 컨텍스트 권장 경로)
+      - 2) `<textarea>` + `document.execCommand('copy')` (비HTTPS/구형)
+      - 3) `window.prompt()` — 수동 복사 유도
+      - `drop-zone.tsx`의 Claude Code 분석 요청 복사도 이 helper로 통일 (기존 inline 폴백 제거)
+    - [x] **localStorage 기록** — `lib/storage/recent-prompt.ts`:
+      - `promptStudio.recentCopiedPrompt = { text, referenceId, promptId, tool, language, copiedAt }`
+      - 30분 자동 만료 + SSR guard + JSON 파싱 실패 내성
+    - [x] **sonner toast** — `app/layout.tsx`에 `<Toaster />` 배치, 복사 outcome별 description 차별화 (clipboard/exec/prompt)
+  - 테스트:
+    - [x] vitest 6개 (save/load/clear/30분 경계/깨진 JSON/결손 필드)
+    - [x] Playwright 2개 — 클립보드 내용·토스트·localStorage 기록 동시 검증 · Claude Code 분석 요청 복사 regression
+  - 실제 소요: 약 1시간
   - 의존: Task 011
 
 - [ ] 대기 **Task 013: 레퍼런스 상세 페이지**
@@ -690,7 +693,7 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
 ## 진행 상태 요약
 
 - **Phase 0 (선행)**: 0/3 Task 완료
-- **Phase 1 (Week 1, D1-D7)**: 10/13 Task 완료 (Task 001~008 ✓ · Task 009 B 재설계로 Task 008에 흡수 삭제 · Task 010~011 ✓) — **V1 코어 F001 완성 + F002 카드·편집 UX 완성**
+- **Phase 1 (Week 1, D1-D7)**: 11/13 Task 완료 (Task 001~008 ✓ · Task 009 B 재설계로 Task 008에 흡수 삭제 · Task 010~012 ✓) — **V1 코어 F001 완성 + F002 copy & 스마트 매칭까지 완성**
 - **Phase 2 (Week 2, D8-D14)**: 0/9 Task 완료 (Task 016-1 ops.md 추가, D10 게이트 결과에 따라 Task 수 변동)
 - **Phase 3 (Week 3, D15-D21)**: 0/11 Task 완료 (Task 030-1 백업 스크립트 추가, V1.5 기능 선택에 따라 변동)
 
