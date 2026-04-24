@@ -16,6 +16,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   - **Midjourney (3순위)**: 추상 이미지, 영어 프롬프트 기본
   - **모든 도구에서 en/ko 둘 다 선택 가능** (기본값 연동하되 수동 override 허용 → 6 조합 자유). 안나 자기진단 약점은 "프롬프트 활용능력이 낮아 단순 설명 반복" → 도구의 1차 가치는 **Claude Code에 정확하게 질문하도록 도구별 베스트 프랙티스가 반영된 프롬프트 조립을 대신해주는 것**. Task 000(T0 실측) 스킵 확정으로 1차 성공 지표는 `prompts.self_rating` 평균 uplift, 2차는 시간·이터레이션 감축.
 - 기획 단계는 gstack /office-hours + /autoplan 으로 수행됨 (산출물: PRD·ROADMAP·DESIGN 3개 문서). 구현 단계는 일반 Claude Code + /git:commit + /docs:update-roadmap. D10 게이트·D13 배포 시점에 /review·/qa·/ship 사용 여부 재판단.
+- **배포 환경** (2026-04-25 Task 008-1 preview 리허설 완료): Production URL `https://anna-contents.vercel.app/` · Vercel 프로젝트 `anna-co-kr/anna_contents`에 GitHub main 브랜치 자동 배포. 환경변수 3종(`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`)만 Vercel에 세팅. `SLACK_WEBHOOK_URL`, `TEST_EMAIL`, `TEST_PASSWORD`는 로컬 전용. Supabase Auth Site URL은 아직 `http://localhost:3000` 유지(dev 작업 우선) — D13 당일 production URL로 전환 예정. 리허설 상세: `docs/baseline/preview-rehearsal.md`
 
 **루트 README.md는 업스트림 스타터 문서이므로 제품 맥락 참고 불가.** 제품 맥락은 아래 문서에서 가져올 것:
 

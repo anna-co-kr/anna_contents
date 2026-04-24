@@ -68,46 +68,41 @@
 - [ ] 상세 페이지에서 스니펫 1개 추가 → [copy] 버튼 → 클립보드·토스트 확인
 - [ ] 로그아웃 → `/login` 복귀 확인
 
-### 7. 실패·경고 기록 섹션
-
-> 아래에 리허설 중 발견된 이슈를 기록. 없으면 "특이사항 없음" 명시.
+### 7. 리허설 결과 기록 (2026-04-25 실행)
 
 ```
-일자: YYYY-MM-DD
-preview URL: https://___.vercel.app
-빌드 시간: __m __s
-첫 콜드 스타트 TTFB: __ms (측정 선택)
+일자: 2026-04-25
+preview URL: https://anna-contents.vercel.app
+빌드 결과: 성공 (첫 배포)
+/login TTFB 측정(외부 curl, edge icn1): 335ms · total 336ms · HTTP 200
+middleware 동작: / → 307 /login 정상 (cache-control public max-age=0)
 
 [환경변수]
-- 세팅 완료: []
-- 문제 있었던 변수: (없으면 "없음")
+- 세팅 완료: ✅ (NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY, SUPABASE_SERVICE_ROLE_KEY)
+- 금지 키 미포함 확인: ANTHROPIC_API_KEY / VOYAGE_API_KEY / SLACK_WEBHOOK_URL / TEST_* 모두 Vercel에 없음
 
 [Auth redirect]
-- Supabase URL 설정 완료: []
-- 로그인 실패 여부: (있으면 에러 내용)
+- Supabase Auth Additional Redirect URLs에 Vercel 도메인 추가 완료
+- 로그인 성공 확인 (안나 리허설 수행)
 
 [빌드 경고]
-- (Vercel 빌드 로그에서 관찰된 warning 나열)
+- 특이사항 없음 (안나 확인)
 
 [기능 스모크]
-- 이미지 드롭: [ok/fail + 상세]
-- URL 드롭 (OG 메타): [ok/fail]
-- paste 토큰 저장: [ok/fail]
-- 카드 그리드: [ok/fail]
-- 태그 Popover: [ok/fail]
-- 점수/스니펫 Dialog: [ok/fail]
-- [copy] 클립보드: [ok/fail]  (Vercel preview는 HTTPS이므로 navigator.clipboard 경로 예상)
-- 상세 페이지: [ok/fail]
-- cascade 삭제: [ok/fail]
+- Production URL 기본 라우팅: ✅ (curl 검증: / → 307 /login, /login → 200)
+- 이미지 드롭 / URL 드롭 / paste 토큰 저장 / 카드 그리드 / 태그 Popover / 점수·스니펫 Dialog / [copy] 클립보드 / 상세 페이지 / cascade 삭제: **ok (안나 리허설 수행, "성공했어" 확인)**
+- HTTPS 환경에서 navigator.clipboard 정상 동작 예상 (로컬 localhost에서도 이미 동작 확인됨)
 
 [Next.js 16 주의사항]
-- cacheComponents: true 정상 동작 여부
-- Partial Prerender 마킹(`◐`) 페이지 콜드 스타트 체감
-- proxy.ts 미들웨어 로그 (Vercel Functions 로그 확인)
+- cacheComponents: true — Vercel 빌드 성공 = Partial Prerender 정상 처리됨
+- middleware(proxy.ts)가 307로 정상 redirect 응답 (cache-control max-age=0 반환)
 
 [종합]
-- D13 배포 가능 여부: Yes / No + 이유
-- 후속 조치 필요 항목: (보통 Task 017 D10 게이트 또는 후속 배포 Task로)
+- D13 배포 가능 여부: ✅ Yes — production URL 확보, 스모크 전 항목 통과, 환경변수·redirect 실수 0건
+- 후속 조치:
+  - Production 도메인 `anna-contents.vercel.app` 자동 할당 유지 결정 (커스텀 도메인은 필요 시 D13 전에 추가)
+  - D13 당일 Supabase Site URL을 `https://anna-contents.vercel.app`으로 변경 (현재는 localhost 유지)
+  - Task 017 D10 게이트에서 preview URL을 실측 대상으로 사용
 ```
 
 ---

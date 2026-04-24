@@ -231,16 +231,19 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
   - 예상 소요: 3시간 (API 연동·재시도·counter 로직 전부 제거돼 단축)
   - 의존: Task 005, 007
 
-- [ ] 대기 **Task 008-1: Vercel preview 첫 배포 리허설** — **DEP-1 CEO 리뷰 반영**
-  - 목표: Task 008 완료 시점(D3 말)에 Vercel 첫 preview 배포를 리허설해 환경변수·CORS·Supabase Auth redirect URL 실수를 D13 영상 출시 전 발견
+- [x] 완료 **Task 008-1: Vercel preview 첫 배포 리허설 (2026-04-25)** — **DEP-1 CEO 리뷰 반영**
+  - 목표: Task 008 완료 시점에 Vercel 첫 배포 리허설로 환경변수·CORS·Supabase Auth redirect URL 실수를 D13 출시 전 사전 발견
   - 참조 PRD 기능: 전체 V1 코어 배포 가능성 검증
+  - **결과**: ✅ **성공** — Production URL `https://anna-contents.vercel.app/` 확보
   - 완료 기준:
-    - Vercel 프로젝트 생성 + GitHub 레포 연동
-    - preview 환경변수 세팅 (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`). ~~`ANTHROPIC_API_KEY`~~ 불필요 (B 재설계)
-    - Supabase Auth redirect URL에 Vercel preview 도메인 추가
-    - preview URL에서 로그인 → URL 드롭 → Claude Code 분석 요청 복사 → 수동으로 샘플 6-key JSON paste → 저장 성공 1회 확인
-    - 실패/경고 사항 `docs/baseline/preview-rehearsal.md`에 기록
-  - 예상 소요: 30분
+    - [x] Vercel 프로젝트 생성 + GitHub `anna-co-kr/anna_contents` 연동
+    - [x] 환경변수 3종 세팅 (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY` Sensitive). ANTHROPIC/VOYAGE 키 불필요 (B 재설계)
+    - [x] Supabase Auth redirect URL에 Vercel 도메인 추가
+    - [x] preview URL 스모크 전 항목 통과 (로그인·드롭·paste·Popover·Dialog·copy·상세·cascade 삭제)
+    - [x] 실측 TTFB: `/login` 335ms (edge icn1, curl 외부 측정)
+    - [x] middleware(proxy.ts) 동작 확인: `/` → 307 `/login`
+    - [x] 결과를 `docs/baseline/preview-rehearsal.md` §7에 기록
+  - 실제 소요: 약 30분
   - 의존: Task 008
 
 - [ ] 대기 **Task 009: ~~F001 Vision 실패 폴백~~ → Task 008에 흡수 완료**
@@ -711,7 +714,7 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
 ## 진행 상태 요약
 
 - **Phase 0 (선행)**: 0/3 Task 완료
-- **Phase 1 (Week 1, D1-D7)**: 12/13 Task 완료 (Task 001~008 ✓ · Task 009 B 재설계로 Task 008에 흡수 삭제 · Task 010~013 ✓) — **F001 + F002 전체 UX 완성**. 남은 것은 Task 008-1 preview 배포 리허설뿐.
+- **Phase 1 (Week 1, D1-D7)**: 13/13 Task **완료** 🎉 (Task 001~008 ✓ · Task 008-1 ✓ Vercel preview 성공 · Task 009 B 재설계로 Task 008에 흡수 삭제 · Task 010~013 ✓) — **F001 + F002 전체 UX + preview 배포 검증 완성**. Production URL: https://anna-contents.vercel.app/
 - **Phase 2 (Week 2, D8-D14)**: 0/9 Task 완료 (Task 016-1 ops.md 추가, D10 게이트 결과에 따라 Task 수 변동)
 - **Phase 3 (Week 3, D15-D21)**: 0/11 Task 완료 (Task 030-1 백업 스크립트 추가, V1.5 기능 선택에 따라 변동)
 
