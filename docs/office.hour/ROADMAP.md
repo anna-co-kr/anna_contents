@@ -63,7 +63,7 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
 ### D1 — 스켈레톤
 
 - [x] 완료 **Task 001: Supabase Next.js 스타터킷 정리 + 기반 확장** — 우선순위 (2026-04-24)
-  - 목표: 이미 설치된 Supabase Next.js 공식 스타터(Next.js 15 App Router + TypeScript 5 + React 19 + **Tailwind v3.4** + shadcn/ui new-york) 기반 위에 **불필요 스타터 잔재 제거 + Prompt Studio 전용 의존성 추가**
+  - 목표: 이미 설치된 Supabase Next.js 공식 스타터(Next.js 16 App Router + TypeScript 5 + React 19 + **Tailwind v3.4** + shadcn/ui new-york) 기반 위에 **불필요 스타터 잔재 제거 + Prompt Studio 전용 의존성 추가**
   - 참조 PRD 기능: 전체 인프라 기반
   - 전제: 루트에 `package.json`·`tailwind.config.ts`·`components.json`·`proxy.ts`·`lib/supabase/{client,server,proxy}.ts`가 이미 존재. **새 `create-next-app` 실행 금지** — 기존 스타터 구성이 공식 source of truth.
   - 완료 기준:
@@ -73,7 +73,7 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
       - `app/auth/update-password/`, `app/auth/forgot-password/`, `app/auth/error/` 삭제 (단일 계정 관리용 페이지)
       - 루트 `README.md`는 스타터 문서 → Task 030에서 Prompt Studio 전용으로 대체 예정이므로 이 Task에서는 건드리지 않음
       - `app/page.tsx`·`app/protected/page.tsx`의 스타터 컨텐츠는 삭제하되 **파일 자체는 유지** (레이아웃 구조 보존)
-    - **Next.js 15 `cacheComponents: true` 취급**: 공식 Supabase 스타터의 기본값이므로 **그대로 유지**. 단 이후 Task에서 새 페이지를 만들 때 dynamic API(`cookies()`/`headers()`/`searchParams`) 사용 코드는 반드시 `<Suspense>` 경계 안에 둘 것. `app/page.tsx`의 기존 Suspense 패턴 참고.
+    - **Next.js 16 `cacheComponents: true` 취급** (Next.js 15부터 도입된 기능, 16에서 기본 활성): 공식 Supabase 스타터의 기본값이므로 **그대로 유지**. 단 이후 Task에서 새 페이지를 만들 때 dynamic API(`cookies()`/`headers()`/`searchParams`) 사용 코드는 반드시 `<Suspense>` 경계 안에 둘 것. `app/page.tsx`의 기존 Suspense 패턴 참고.
     - shadcn/ui 기본 컴포넌트 추가 설치 (`npx shadcn@latest add button card input dialog sonner badge dropdown-menu form label textarea select slider` — sonner가 shadcn/ui 공식 toast 대체)
     - 추가 의존성: `react-hook-form` + `zod` + `@hookform/resolvers` 설치
     - `npm run dev` 로 localhost:3000 정상 구동 + `/auth/login` 접근 확인 (스타터 로그인 페이지는 유지, Task 006에서 재작성)

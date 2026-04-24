@@ -32,10 +32,10 @@ npm run lint         # eslint flat config (next/core-web-vitals + next/typescrip
 ## 중요한 아키텍처 포인트
 
 ### Next.js 라우팅 미들웨어는 `proxy.ts`다 (`middleware.ts` 아님)
-루트에 `/proxy.ts`가 있다. 이건 Next.js 15 이후 `middleware.ts`의 새 파일명이다. 요청마다 `lib/supabase/proxy.ts`의 `updateSession()`이 돌아서 (1) Supabase 쿠키를 리프레시하고 (2) 비로그인 사용자를 `/auth/login`으로 리다이렉트한다. **새 미들웨어 로직을 추가할 때 `middleware.ts` 파일을 만들지 말고 `proxy.ts`를 수정한다.**
+루트에 `/proxy.ts`가 있다. 이건 Next.js 15부터 도입된 `middleware.ts`의 새 파일명이며 현재 Next.js 16에서도 유효하다. 요청마다 `lib/supabase/proxy.ts`의 `updateSession()`이 돌아서 (1) Supabase 쿠키를 리프레시하고 (2) 비로그인 사용자를 `/auth/login`으로 리다이렉트한다. **새 미들웨어 로직을 추가할 때 `middleware.ts` 파일을 만들지 말고 `proxy.ts`를 수정한다.**
 
 ### `next.config.ts`의 `cacheComponents: true`
-Next.js 15의 실험 기능. Server Components 캐싱 동작을 바꾸므로 `Suspense` 경계와 `unstable_cache`를 사용할 때 동작 이해 필요. 이 플래그를 건드리기 전에 현재 페이지들(`app/page.tsx`, `app/protected/page.tsx`)이 `<Suspense>`를 어떻게 쓰고 있는지 확인.
+Next.js 15부터 도입된 기능으로 현재 Next.js 16에서 **기본 활성** (빌드 로그에 `Cache Components enabled`로 표시). Server Components 캐싱 동작을 바꾸므로 `Suspense` 경계와 `unstable_cache`를 사용할 때 동작 이해 필요. 이 플래그를 건드리기 전에 현재 페이지들(`app/page.tsx`, `app/protected/page.tsx`)이 `<Suspense>`를 어떻게 쓰고 있는지 확인.
 
 ### Supabase 클라이언트 3종류 — 용도별로 골라 쓸 것
 - `lib/supabase/client.ts` — 브라우저용 (`"use client"` 컴포넌트)
@@ -61,6 +61,7 @@ Next.js 15의 실험 기능. Server Components 캐싱 동작을 바꾸므로 `Su
 
 이 제약들은 Claude가 임의로 바꾸지 말 것 — 각각 `docs/office.hour/PRD.md` · `docs/office.hour/ROADMAP.md` 문서에 근거 있음:
 
+- **Next.js 16 + 의존성 메이저 버전 pin 원칙**: 현재 Next.js 16.2.4 (Task 001 시점 `"next": "latest"`가 자동으로 16으로 올라갔음 → Task 001 말미에 `"^16.2.4"` pin 조치). **메이저 버전 업그레이드는 breaking change 리스크로 계획된 별도 Task에서만 수행.** Task 001 교훈: `"latest"` 또는 semver 미고정된 의존성(`@supabase/ssr`, `@supabase/supabase-js` 등)은 향후 점진적으로 pin 전환 고려. 의존성 추가 시 `^X.Y.Z` 포맷(major 고정, minor/patch 허용)을 기본으로 한다.
 - **Tailwind v3.4 고정 (v4로 마이그레이션 금지)**: Supabase Next.js 공식 스타터킷이 v3 기반으로 구성돼 있음(`tailwindcss ^3.4.1` + `tailwind.config.ts` + `@tailwind base/components/utilities` + `hsl(var(--*))` 포맷). shadcn/ui `components.json`은 v4 포맷 필드(`config: ""`)가 있지만 `cssVariables: true` + v3 호환 설정으로 현상태에서 정상 동작. v4 전환은 globals.css 재작성·config 삭제·tailwindcss-animate 대체 등 대규모 변경으로 "오류 없음" 목표에 반함.
 - **Supabase 환경변수 키 이름**: `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (신규 키 이름, legacy `ANON_KEY`와 호환). `lib/supabase/{client,server,proxy}.ts` 3개 파일 모두 `PUBLISHABLE_KEY`를 참조하므로 **절대 `ANON_KEY`로 되돌리지 말 것**. 추가 예정 키: `SUPABASE_SERVICE_ROLE_KEY`, `ANTHROPIC_API_KEY`, `VOYAGE_API_KEY`.
 - **`cacheComponents: true` 유지 + Suspense 경계 의무**: `next.config.ts` 기본값 유지(Supabase 공식 스타터 설정). 새 페이지에서 `cookies()`/`headers()`/`searchParams`/`params` 같은 dynamic API 사용 시 반드시 `<Suspense>` 경계로 감쌀 것. `app/page.tsx` 기존 Suspense 패턴 참고. 이 규칙 위반 시 빌드·런타임 오류 발생.

@@ -297,7 +297,7 @@ Prompt Studio v0.5 내비게이션
 
 ### 프론트엔드 프레임워크
 
-- **Next.js 15** (App Router) — React 풀스택 프레임워크. 서버 컴포넌트로 Vision API 호출 처리
+- **Next.js 16** (App Router, Turbopack 기본) — React 풀스택 프레임워크. 서버 컴포넌트로 Vision API 호출 처리. `cacheComponents` 활성 기본
 - **TypeScript 5.6+** — 타입 안전성 보장. any 타입 사용 금지
 - **React 19** — UI 라이브러리 (최신 동시성 기능 활용)
 
@@ -325,7 +325,7 @@ Prompt Studio v0.5 내비게이션
 
 ### 배포 & 호스팅
 
-- **Vercel** — Next.js 15 최적화 배포. git push → 자동 preview 배포
+- **Vercel** — Next.js 16 최적화 배포. git push → 자동 preview 배포
 
 ### 패키지 관리
 
