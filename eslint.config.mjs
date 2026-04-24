@@ -10,6 +10,15 @@ const compat = new FlatCompat({
 });
 
 const eslintConfig = [
+  {
+    ignores: [
+      // Supabase CLI 자동 생성 파일 (supabase gen types typescript --linked)
+      "types/database.ts",
+      // 빌드 산출물·의존성
+      ".next/**",
+      "node_modules/**",
+    ],
+  },
   ...compat.extends("next/core-web-vitals", "next/typescript"),
 ];
 

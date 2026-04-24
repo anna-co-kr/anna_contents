@@ -101,7 +101,7 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
   - 예상 소요: 1시간 (pgvector 제거로 단축)
   - 의존: Task 001
 
-- [ ] 대기 **Task 003: Supabase 스키마 마이그레이션 (5개 테이블)**
+- [x] 완료 **Task 003: Supabase 스키마 마이그레이션 (5개 테이블)** (2026-04-24)
   - 목표: `references` / `reference_tokens` / `tags` / `prompts` / `pairs` 5개 테이블 생성 + RLS 정책
   - 참조 PRD 기능: 전체 데이터 모델 토대
   - 완료 기준:
@@ -633,7 +633,7 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
 ## 진행 상태 요약
 
 - **Phase 0 (선행)**: 0/3 Task 완료
-- **Phase 1 (Week 1, D1-D7)**: 2/13 Task 완료 (Task 001 ✓ · Task 002 ✓ · Task 009 B 재설계로 Task 008에 흡수 삭제)
+- **Phase 1 (Week 1, D1-D7)**: 3/13 Task 완료 (Task 001 ✓ · Task 002 ✓ · Task 003 ✓ · Task 009 B 재설계로 Task 008에 흡수 삭제)
 - **Phase 2 (Week 2, D8-D14)**: 0/9 Task 완료 (Task 016-1 ops.md 추가, D10 게이트 결과에 따라 Task 수 변동)
 - **Phase 3 (Week 3, D15-D21)**: 0/11 Task 완료 (Task 030-1 백업 스크립트 추가, V1.5 기능 선택에 따라 변동)
 
