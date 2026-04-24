@@ -29,6 +29,19 @@
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
+
+    /* Prompt Studio 6차원 토큰 semantic color (light) */
+    --token-subject: 20 90% 55%;
+    --token-style: 280 70% 60%;
+    --token-lighting: 45 95% 60%;
+    --token-composition: 200 55% 50%;
+    --token-medium: 25 40% 45%;
+    --token-mood: 330 65% 60%;
+
+    /* Prompt Studio 계층형 radius */
+    --ref-card-radius: 16px;
+    --chip-radius: 8px;
+    --dialog-radius: 12px;
   }
   .dark {
     --background: 0 0% 3.9%;
@@ -55,6 +68,14 @@
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+
+    /* Prompt Studio 6차원 토큰 semantic color (dark, 가독성 위해 명도 상향) */
+    --token-subject: 20 85% 65%;
+    --token-style: 280 65% 70%;
+    --token-lighting: 45 90% 70%;
+    --token-composition: 200 60% 60%;
+    --token-medium: 25 45% 60%;
+    --token-mood: 330 70% 70%;
   }
 }
 

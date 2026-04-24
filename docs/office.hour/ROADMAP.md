@@ -62,7 +62,7 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
 
 ### D1 — 스켈레톤
 
-- [ ] 대기 **Task 001: Supabase Next.js 스타터킷 정리 + 기반 확장** — 우선순위
+- [x] 완료 **Task 001: Supabase Next.js 스타터킷 정리 + 기반 확장** — 우선순위 (2026-04-24)
   - 목표: 이미 설치된 Supabase Next.js 공식 스타터(Next.js 15 App Router + TypeScript 5 + React 19 + **Tailwind v3.4** + shadcn/ui new-york) 기반 위에 **불필요 스타터 잔재 제거 + Prompt Studio 전용 의존성 추가**
   - 참조 PRD 기능: 전체 인프라 기반
   - 전제: 루트에 `package.json`·`tailwind.config.ts`·`components.json`·`proxy.ts`·`lib/supabase/{client,server,proxy}.ts`가 이미 존재. **새 `create-next-app` 실행 금지** — 기존 스타터 구성이 공식 source of truth.
@@ -610,7 +610,7 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
 ## 진행 상태 요약
 
 - **Phase 0 (선행)**: 0/3 Task 완료
-- **Phase 1 (Week 1, D1-D7)**: 0/14 Task 완료 (Task 008-1 preview 리허설 추가)
+- **Phase 1 (Week 1, D1-D7)**: 1/14 Task 완료 (Task 001 ✓ · Task 008-1 preview 리허설 추가)
 - **Phase 2 (Week 2, D8-D14)**: 0/9 Task 완료 (Task 016-1 ops.md 추가, D10 게이트 결과에 따라 Task 수 변동)
 - **Phase 3 (Week 3, D15-D21)**: 0/11 Task 완료 (Task 030-1 백업 스크립트 추가, V1.5 기능 선택에 따라 변동)
 
