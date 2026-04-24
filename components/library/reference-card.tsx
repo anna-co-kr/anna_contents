@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { ImageIcon, Star, Tag as TagIcon, Pencil } from "lucide-react";
+import { ImageIcon, Star } from "lucide-react";
 import type { ReferenceCardData } from "@/app/(app)/library/actions";
 import { TOKEN_KEYS, type Token } from "@/lib/schemas/tokens";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { TagPopover } from "@/components/library/tag-popover";
+import { ReferenceEditDialog } from "@/components/library/reference-edit-dialog";
 
 const TOKEN_COLOR_CLASS: Record<(typeof TOKEN_KEYS)[number], string> = {
   subject: "bg-token-subject/15 text-token-subject border-token-subject/30",
@@ -77,13 +78,12 @@ export function ReferenceCard({ card }: ReferenceCardProps) {
         </div>
       </Link>
 
-      <div className="absolute right-2 top-2 flex gap-1 opacity-0 transition group-hover:opacity-100 focus-within:opacity-100">
-        <CardActionButton label="태그 편집" disabled>
-          <TagIcon className="size-3.5" />
-        </CardActionButton>
-        <CardActionButton label="상세 편집" disabled>
-          <Pencil className="size-3.5" />
-        </CardActionButton>
+      <div className="absolute right-2 top-2 flex gap-1 opacity-100 transition focus-within:opacity-100 lg:opacity-0 lg:group-hover:opacity-100">
+        <TagPopover referenceId={id} tags={tags} />
+        <ReferenceEditDialog
+          referenceId={id}
+          initialScore={favoriteScore}
+        />
       </div>
 
       <div className="space-y-2.5 p-3">
@@ -146,26 +146,3 @@ function TokenChip({
   );
 }
 
-function CardActionButton({
-  label,
-  disabled,
-  children,
-}: {
-  label: string;
-  disabled?: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <Button
-      type="button"
-      variant="secondary"
-      size="icon"
-      className="size-7 rounded-full bg-background/90 shadow-sm backdrop-blur hover:bg-background"
-      disabled={disabled}
-      aria-label={label}
-      onClick={(e) => e.preventDefault()}
-    >
-      {children}
-    </Button>
-  );
-}

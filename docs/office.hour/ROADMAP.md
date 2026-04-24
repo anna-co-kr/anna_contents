@@ -263,22 +263,24 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
   - 실제 소요: 약 2시간
   - 의존: Task 007
 
-- [ ] 대기 **Task 011: F002 점수·태그·프롬프트 스니펫 입력**
-  - 목표: 카드 내 인라인 입력 또는 다이얼로그로 점수/태그/스니펫 저장
+- [x] 완료 **Task 011: F002 점수·태그·프롬프트 스니펫 입력**
+  - 목표: 카드 내 분리 동선 — 태그는 Popover (최단 경로), 점수/스니펫은 Dialog
   - 참조 PRD 기능: F002 (PRD 56)
   - 완료 기준:
-    - 1~10 점수 입력: **10-step dot slider** 고정 (DESIGN-7 autoplan 반영 — "슬라이더 또는 스타 레이팅" 결정 유보 제거)
-    - 태그 추가/삭제 (tag_kind: category/mood/color/purpose 구분 선택)
-    - **프롬프트 스니펫 텍스트 영역** (여러 버전 저장 가능, `prompts.source = 'copied'`):
-      - **tool 3-way 토글 필수** (Midjourney · Nano Banana Pro · Higgsfield, 세그먼트 컨트롤)
-      - **language 2-way 토글 필수** (en · ko, tool 선택 시 기본값 자동 세팅: MJ→en, NBP→ko, Higgsfield→en, 수동 override 가능 → **6 조합 자유**)
-      - (선택) self_rating 1~5 입력 — 페어 저장 시에도 기록되지만 여기서 선행 평가 가능
-    - 저장 즉시 카드 UI 반영 (optimistic update). 스니펫 목록은 tool·language 배지로 시각 구분 (도구별 색상 차별화 권장)
-  - 테스트 체크리스트 (Playwright MCP):
-    - [ ] 점수 저장 후 카드 반영 확인
-    - [ ] 태그 추가 → DB 반영 → 새로고침 후 유지 확인
-    - [ ] 스니펫 여러 버전 저장 가능 확인
-  - 예상 소요: 4시간
+    - [x] 1~10 점수 입력: **10-step dot slider** (`components/ui/dot-slider.tsx`, Arrow/Home/End/Delete 키보드 지원, DESIGN-7 해소)
+    - [x] 태그 추가/삭제 — **카드 [🏷] 버튼 → Popover** (대량 축적 워크플로우 최적화) · tag_kind 4-way select · HTML `<datalist>` 네이티브 자동완성 · Enter 추가 · 칩 × 삭제 · optimistic update
+    - [x] **프롬프트 스니펫** (`prompts.source='copied'`):
+      - [x] tool 3-way 세그먼트(NBP/Higgsfield/MJ, tool별 색상 차별화)
+      - [x] language 2-way 토글(en/ko) + tool 선택 시 기본값 자동 세팅(NBP→ko, MJ→en, Higgsfield→en)
+      - [x] self_rating dot-slider 1~5 (선택)
+      - [x] 스니펫 목록 즉시 반영·삭제 가능
+    - [x] optimistic update + router.refresh() · Server Actions 6종(`updateReferenceScore`, `addReferenceTag`, `deleteReferenceTag`, `listUserTagSuggestions`, `addPromptSnippet`, `deletePromptSnippet`, `listReferenceSnippets`)
+  - 테스트 체크리스트 (Playwright `task-011.spec.ts` 4/4 통과):
+    - [x] Popover 태그 추가 → 즉시 반영 → 삭제
+    - [x] dot slider 점수 저장 → "10 / 10" 반영
+    - [x] 스니펫 추가 → 목록 노출 → 삭제
+    - [x] tool 3종 변경 시 language 기본값 자동 세팅 확인
+  - 실제 소요: 약 2.5시간
   - 의존: Task 010
 
 - [ ] 대기 **Task 012: F002 [copy prompt] 버튼 + 클립보드 토스트 + 스마트 매칭 연동**
@@ -688,7 +690,7 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
 ## 진행 상태 요약
 
 - **Phase 0 (선행)**: 0/3 Task 완료
-- **Phase 1 (Week 1, D1-D7)**: 9/13 Task 완료 (Task 001~008 ✓ · Task 009 B 재설계로 Task 008에 흡수 삭제 · Task 010 ✓) — **V1 코어 F001 완성 + F002 카드 그리드 착수**
+- **Phase 1 (Week 1, D1-D7)**: 10/13 Task 완료 (Task 001~008 ✓ · Task 009 B 재설계로 Task 008에 흡수 삭제 · Task 010~011 ✓) — **V1 코어 F001 완성 + F002 카드·편집 UX 완성**
 - **Phase 2 (Week 2, D8-D14)**: 0/9 Task 완료 (Task 016-1 ops.md 추가, D10 게이트 결과에 따라 Task 수 변동)
 - **Phase 3 (Week 3, D15-D21)**: 0/11 Task 완료 (Task 030-1 백업 스크립트 추가, V1.5 기능 선택에 따라 변동)
 

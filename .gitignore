@@ -45,3 +45,8 @@ next-env.d.ts
 /test-results/
 /playwright-report/
 /playwright/.cache/
+
+# Playwright MCP session artifacts (ad-hoc visual checks, not committed)
+.playwright-mcp/
+*.spec.png
+task-*-dialog.png
