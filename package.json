@@ -8,6 +8,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
+    "test:e2e": "playwright test",
     "check:secrets": "! grep -rE 'NEXT_PUBLIC_(ANTHROPIC|SUPABASE_SERVICE|VOYAGE)_API' app components lib 2>/dev/null || (echo 'FAIL: API 키가 클라이언트 번들에 노출될 수 있는 이름으로 참조되고 있습니다.' && exit 1)"
   },
   "dependencies": {
@@ -35,6 +36,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@playwright/test": "^1.59.1",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
