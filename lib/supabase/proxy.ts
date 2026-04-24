@@ -47,16 +47,22 @@ export async function updateSession(request: NextRequest) {
   const { data } = await supabase.auth.getClaims();
   const user = data?.claims;
 
-  if (
-    request.nextUrl.pathname !== "/" &&
-    !user &&
-    !request.nextUrl.pathname.startsWith("/login") &&
-    !request.nextUrl.pathname.startsWith("/auth")
-  ) {
-    // no user, redirect to the login page
+  const path = request.nextUrl.pathname;
+  const isLoginPath = path === "/login" || path.startsWith("/login/");
+  const isAuthPath = path.startsWith("/auth");
+
+  if (!user && !isLoginPath && !isAuthPath) {
+    // 비로그인: /login, /auth/* 외 경로(루트 `/` 포함)는 전부 /login으로
     // URL은 /login (app/(auth)/login/page.tsx — route group은 URL에 영향 없음)
     const url = request.nextUrl.clone();
     url.pathname = "/login";
+    return NextResponse.redirect(url);
+  }
+
+  if (user && (path === "/" || isLoginPath)) {
+    // 로그인됨: 루트 또는 /login 접근 시 /library로
+    const url = request.nextUrl.clone();
+    url.pathname = "/library";
     return NextResponse.redirect(url);
   }
 
