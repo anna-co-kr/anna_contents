@@ -146,7 +146,7 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
   - 예상 소요: 3시간
   - 의존: Task 001, 002
 
-- [ ] 대기 **Task 005: TypeScript 타입 정의 + Zod 스키마 + 단위 테스트 기반**
+- [x] 완료 **Task 005: TypeScript 타입 정의 + Zod 스키마 + 단위 테스트 기반** (2026-04-24)
   - 목표: 6차원 토큰 Zod 스키마, DB 엔터티 타입, Claude Code 응답 paste 검증 유틸 + vitest 세팅
   - 참조 PRD 기능: F001 스키마 드리프트 방지 핵심 (외부 API 없음, Zod가 유일 방어선)
   - 완료 기준:
@@ -687,7 +687,7 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
 ## 진행 상태 요약
 
 - **Phase 0 (선행)**: 0/3 Task 완료
-- **Phase 1 (Week 1, D1-D7)**: 4/13 Task 완료 (Task 001 ✓ · 002 ✓ · 003 ✓ · 004 ✓ · Task 009 B 재설계로 Task 008에 흡수 삭제)
+- **Phase 1 (Week 1, D1-D7)**: 5/13 Task 완료 (Task 001 ✓ · 002 ✓ · 003 ✓ · 004 ✓ · 005 ✓ · Task 009 B 재설계로 Task 008에 흡수 삭제)
 - **Phase 2 (Week 2, D8-D14)**: 0/9 Task 완료 (Task 016-1 ops.md 추가, D10 게이트 결과에 따라 Task 수 변동)
 - **Phase 3 (Week 3, D15-D21)**: 0/11 Task 완료 (Task 030-1 백업 스크립트 추가, V1.5 기능 선택에 따라 변동)
 
