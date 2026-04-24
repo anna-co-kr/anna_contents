@@ -39,21 +39,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      instruments: {
-        Row: {
-          id: number
-          name: string
-        }
-        Insert: {
-          id?: never
-          name: string
-        }
-        Update: {
-          id?: never
-          name?: string
-        }
-        Relationships: []
-      }
       pairs: {
         Row: {
           created_at: string

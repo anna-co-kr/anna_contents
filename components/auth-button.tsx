@@ -12,13 +12,15 @@ export async function AuthButton() {
   const user = data?.claims;
 
   return user ? (
-    <div className="flex items-center gap-4">
-      {user.email}
+    <div className="flex items-center gap-3">
+      <span className="text-xs text-muted-foreground hidden sm:inline">
+        {user.email as string}
+      </span>
       <LogoutButton />
     </div>
   ) : (
-    <Button asChild size="sm" variant={"outline"}>
-      <Link href="/auth/login">Sign in</Link>
+    <Button asChild size="sm" variant="outline">
+      <Link href="/login">로그인</Link>
     </Button>
   );
 }
