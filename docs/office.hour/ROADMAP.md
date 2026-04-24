@@ -87,7 +87,7 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
   - 예상 소요: 4시간 (스타터 정리 1h + 의존성 추가 30m + 디자인 토큰 1.5h + 검증 1h)
   - 의존: Phase 0 완료
 
-- [ ] 대기 **Task 002: Supabase 프로젝트 확인 + Storage 버킷 준비** — 우선순위
+- [x] 완료 **Task 002: Supabase 프로젝트 확인 + Storage 버킷 준비** — 우선순위 (2026-04-24)
   - 목표: Supabase 프로젝트 접근 확인, Storage 버킷 생성. **pgvector 확장은 미사용** (B 재설계, 2026-04-24)
   - 참조 PRD 기능: F010 (Auth 기반), F001/F003 (Storage 이미지 업로드)
   - 완료 기준:
@@ -633,7 +633,7 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
 ## 진행 상태 요약
 
 - **Phase 0 (선행)**: 0/3 Task 완료
-- **Phase 1 (Week 1, D1-D7)**: 1/14 Task 완료 (Task 001 ✓ · Task 008-1 preview 리허설 추가)
+- **Phase 1 (Week 1, D1-D7)**: 2/13 Task 완료 (Task 001 ✓ · Task 002 ✓ · Task 009 B 재설계로 Task 008에 흡수 삭제)
 - **Phase 2 (Week 2, D8-D14)**: 0/9 Task 완료 (Task 016-1 ops.md 추가, D10 게이트 결과에 따라 Task 수 변동)
 - **Phase 3 (Week 3, D15-D21)**: 0/11 Task 완료 (Task 030-1 백업 스크립트 추가, V1.5 기능 선택에 따라 변동)
 
