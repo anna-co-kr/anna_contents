@@ -312,6 +312,8 @@ export type ReferenceCardData = {
   notes: string | null;
   uploadedAt: string;
   tokens: Token | null; // 활성 토큰 (미분석 시 null)
+  /** Task 016-4: 활성 토큰의 출처 — 안나의 검수 모드 + anchor 자연 승급용 */
+  tokenSource: "claude-code" | "manual" | null;
   tags: { id: string; label: string; kind: "category" | "mood" | "color" | "purpose" }[];
 };
 
@@ -345,7 +347,7 @@ export async function listReferenceCards(
       favorite_score,
       notes,
       uploaded_at,
-      reference_tokens(tokens, is_active),
+      reference_tokens(tokens, is_active, source),
       tags(id, tag, tag_kind)
       `,
     )
@@ -360,11 +362,16 @@ export async function listReferenceCards(
   const cards: ReferenceCardData[] = await Promise.all(
     (data ?? []).map(async (row) => {
       const activeTokenRow = (row.reference_tokens ?? []).find(
-        (rt: { is_active: boolean; tokens: unknown }) => rt.is_active,
-      );
+        (rt: { is_active: boolean; tokens: unknown; source?: string }) => rt.is_active,
+      ) as { is_active: boolean; tokens: unknown; source?: string } | undefined;
       const tokens = activeTokenRow
         ? normalizeTokens(activeTokenRow.tokens)
         : null;
+      const tokenSource = activeTokenRow?.source === "manual"
+        ? "manual"
+        : activeTokenRow?.source === "claude-code"
+          ? "claude-code"
+          : null;
 
       const signed = row.thumbnail_url
         ? await getSignedThumbnailUrl(row.thumbnail_url)
@@ -379,6 +386,7 @@ export async function listReferenceCards(
         notes: row.notes,
         uploadedAt: row.uploaded_at,
         tokens,
+        tokenSource: tokenSource as ReferenceCardData["tokenSource"],
         tags: (row.tags ?? []).map(
           (t: { id: string; tag: string; tag_kind: ReferenceCardData["tags"][number]["kind"] }) => ({
             id: t.id,
@@ -723,7 +731,7 @@ export async function getReferenceDetail(
       favorite_score,
       notes,
       uploaded_at,
-      reference_tokens(tokens, is_active),
+      reference_tokens(tokens, is_active, source),
       tags(id, tag, tag_kind)
       `,
     )

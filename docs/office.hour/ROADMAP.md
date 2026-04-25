@@ -411,6 +411,18 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
   - 예상 소요: 15분
   - 의존: Task 016
 
+- [x] 완료 **Task 016-4: 검수 모드 — 라이브러리 source 칩 + 필터 토글 (안나 미적 감도 보호 + anchor 자연 승급)** (2026-04-26 신설·완료)
+  - 목표: 자동 분석 토큰(`source='claude-code'`)을 안나가 시각적으로 식별·검수하고, 정정 시 `manual` 승급 → 다음 라운드 lexicon anchor로 자연 진화
+  - 완료 기준:
+    - [x] `ReferenceCardData.tokenSource` 추가 (`'claude-code' | 'manual' | null`)
+    - [x] `listReferenceCards` 쿼리 `reference_tokens.source` select 포함
+    - [x] `ReferenceCard` source 칩: auto = amber "auto · 검수 가능" / manual = emerald "manual ✓"
+    - [x] `FilterableGrid` 신규 client component — 4-way 필터 (전체/auto/manual/분석 대기) + 카운트 + 헬퍼 텍스트
+    - [x] `LibraryGrid` server → FilterableGrid 위임 (data fetch만 server)
+    - 안나 정정 흐름: auto 카드 클릭 → 상세 페이지 → ReferenceEditDialog 토큰 편집 → 자동 `source='manual'` 승급 (saveReferenceTokens 기존 흐름 활용, 추가 로직 불필요)
+  - 의존: 메모리 `project_architecture_no_external_api.md`의 검수 큐 정책
+  - 실제 소요: 1시간
+
 - [x] 완료 **Task 016-3: 자동 6차원 분석 cron 셋업** — 안나 피드백 "사이트 단독 한 번에" 충족 (2026-04-25)
   - 목표: 안나가 라이브러리에 URL/이미지 드롭만 → Claude Code(=현재 채팅 세션)가 자동으로 6차원 분석·저장. 운영비 0원 유지.
   - 참조 PRD 기능: F001 (UX 보강)

@@ -34,8 +34,10 @@ export type ReferenceCardProps = {
 };
 
 export function ReferenceCard({ card }: ReferenceCardProps) {
-  const { id, signedThumbnailUrl, favoriteScore, tokens, tags } = card;
+  const { id, signedThumbnailUrl, favoriteScore, tokens, tags, tokenSource } = card;
   const hasTokens = tokens !== null;
+  const isAuto = tokenSource === "claude-code";
+  const isManual = tokenSource === "manual";
 
   return (
     <article
@@ -73,6 +75,25 @@ export function ReferenceCard({ card }: ReferenceCardProps) {
           {!hasTokens && (
             <div className="absolute right-2 top-2 rounded-full bg-background/90 px-2 py-0.5 text-[10px] font-medium text-muted-foreground shadow-sm backdrop-blur">
               분석 대기
+            </div>
+          )}
+
+          {hasTokens && isAuto && (
+            <div
+              className="absolute left-2 bottom-2 rounded-full bg-amber-100/95 dark:bg-amber-900/70 px-2 py-0.5 text-[10px] font-medium text-amber-900 dark:text-amber-100 shadow-sm backdrop-blur"
+              title="Claude Code 자동 분석 — 검수 후 수정 시 manual로 승급"
+              data-testid={`reference-card-${id}-source-auto`}
+            >
+              auto · 검수 가능
+            </div>
+          )}
+          {hasTokens && isManual && (
+            <div
+              className="absolute left-2 bottom-2 rounded-full bg-emerald-100/95 dark:bg-emerald-900/70 px-2 py-0.5 text-[10px] font-medium text-emerald-900 dark:text-emerald-100 shadow-sm backdrop-blur"
+              title="안나 직접 입력·검수 — 다음 라운드 anchor 후보"
+              data-testid={`reference-card-${id}-source-manual`}
+            >
+              manual ✓
             </div>
           )}
         </div>
