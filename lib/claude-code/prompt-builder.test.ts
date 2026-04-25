@@ -57,4 +57,24 @@ describe("buildAnalysisRequest", () => {
     const prompt = buildAnalysisRequest({ referenceId: "abc-123-secret" });
     expect(prompt).not.toContain("abc-123-secret");
   });
+
+  it("기본 출력은 single-line (Claude Code 데스크탑 앱 paste 안정성)", () => {
+    const prompt = buildAnalysisRequest();
+    // \n 한 개도 없어야 함 — paste 시 line 단위 send 회피
+    expect(prompt).not.toContain("\n");
+    // 한 줄 안에 6 키 모두 + JSON 코드펜스 + 규칙 모두 포함
+    expect(prompt).toContain("subject");
+    expect(prompt).toContain("```json");
+    expect(prompt).toContain("6개 키만");
+  });
+
+  it("multiline 옵션 호출 시 기존 30줄 markdown 출력", () => {
+    const prompt = buildAnalysisRequest({ format: "multiline" });
+    // 여러 줄로 나뉘어야 함 (markdown 가독성)
+    expect(prompt.split("\n").length).toBeGreaterThan(20);
+    // 다중 라인이라도 동일한 6 키·규칙·JSON 펜스 포함
+    expect(prompt).toContain("subject");
+    expect(prompt).toContain("```json");
+    expect(prompt).toContain("6개 키만");
+  });
 });
