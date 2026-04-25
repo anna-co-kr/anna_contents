@@ -50,3 +50,7 @@ next-env.d.ts
 .playwright-mcp/
 *.spec.png
 task-*-dialog.png
+
+# Claude Code session-local state (locks, scheduled task instance, not committed)
+.claude/scheduled_tasks.lock
+.claude/scheduled_tasks.json

@@ -411,6 +411,25 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
   - 예상 소요: 15분
   - 의존: Task 016
 
+- [x] 완료 **Task 016-3: 자동 6차원 분석 cron 셋업** — 안나 피드백 "사이트 단독 한 번에" 충족 (2026-04-25)
+  - 목표: 안나가 라이브러리에 URL/이미지 드롭만 → Claude Code(=현재 채팅 세션)가 자동으로 6차원 분석·저장. 운영비 0원 유지.
+  - 참조 PRD 기능: F001 (UX 보강)
+  - 완료 기준:
+    - `.claude/commands/auto-analyze.md` slash command (분석 대기 카드 조회 → signed URL → 이미지 다운로드 → Read → 6차원 영어 JSON → reference_tokens INSERT)
+    - `scripts/sign-thumbnail.ts` (supabase-js admin으로 Storage 1h signed URL 발급 helper)
+    - CronCreate × 2 등록: 매일 12:03 / 18:33 KST (`recurring=true`)
+    - `docs/auto-analysis-log.md` 누적 로그 파일
+    - CLAUDE.md 자동화 셋업 문단 추가
+    - Supabase MCP 인증 완료 (안나 OAuth)
+    - 시연 결과: 분석 대기 177 → 172 (5건 처리, 빨간 글러브 1 + 커피 잔 4)
+  - 한계 (다음 세션 시작 시 의식할 것):
+    - Cron `durable: true` 명시했으나 환경 제약상 **session-only**로 등록됨. 세션 종료 시 사라짐 → 매 세션 시작 시 재등록 필요.
+    - REPL idle 시에만 fire — 안나가 다른 query 처리 중이면 그 후 실행.
+    - 7일 자동 만료. 매주 갱신.
+    - 향후: macOS launchd plist + `claude -p "/auto-analyze"` 헤드리스 모드로 세션 독립 자동화 검토.
+  - 예상 소요: 1시간 (시연 포함)
+  - 의존: Task 016
+
 ### D10 — V1 코어 게이트 (CRITICAL)
 
 - [x] 진행 **Task 017: D10 게이트 — V1 코어 E2E 점검 (3-tier)** — 자동 10/10 PASS, PARTIAL 판정 (안나 수동 3건 대기, 2026-04-25)
@@ -715,7 +734,7 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
 
 - **Phase 0 (선행)**: 0/3 Task 완료
 - **Phase 1 (Week 1, D1-D7)**: 13/13 Task **완료** 🎉 (Task 001~008 ✓ · Task 008-1 ✓ Vercel preview 성공 · Task 009 B 재설계로 Task 008에 흡수 삭제 · Task 010~013 ✓) — **F001 + F002 전체 UX + preview 배포 검증 완성**. Production URL: https://anna-contents.vercel.app/
-- **Phase 2 (Week 2, D8-D14)**: 5/9 Task 완료 (Task 014·015·016·016-1 + Task 017 자동점검 PARTIAL)
+- **Phase 2 (Week 2, D8-D14)**: 6/10 Task 완료 (Task 014·015·016·016-1·016-3 + Task 017 자동점검 PARTIAL)
 - **Phase 3 (Week 3, D15-D21)**: 0/11 Task 완료 (Task 030-1 백업 스크립트 추가, V1.5 기능 선택에 따라 변동)
 
 ## 기록할 문서 리스트
