@@ -67,9 +67,9 @@ export async function searchReferences(
   if (tagValues.length > 0) {
     const { data: tagRows, error: tagErr } = await supabase
       .from("tags")
-      .select("reference_id, value")
+      .select("reference_id, tag")
       .eq("user_id", user.id)
-      .in("value", tagValues);
+      .in("tag", tagValues);
     if (tagErr) return { ok: false, error: `태그 조회 실패: ${tagErr.message}` };
     // 모든 tag 보유한 ref만 (count = tagValues.length)
     const counter = new Map<string, number>();
@@ -90,7 +90,7 @@ export async function searchReferences(
     .select(
       `id, thumbnail_url, notes, uploaded_at,
        reference_tokens!inner ( tokens, is_active ),
-       tags ( value, tag_kind ),
+       tags ( tag, tag_kind ),
        prompts ( prompt_text, tool, language, self_rating, created_at )`,
     )
     .eq("user_id", user.id)
@@ -114,7 +114,7 @@ export async function searchReferences(
     notes: string | null;
     uploaded_at: string;
     reference_tokens: { tokens: SearchResultCard["tokens"]; is_active: boolean }[];
-    tags: { value: string; tag_kind: string }[] | null;
+    tags: { tag: string; tag_kind: string }[] | null;
     prompts:
       | {
           prompt_text: string;
@@ -181,7 +181,7 @@ export async function searchReferences(
         notes: row.notes,
         uploaded_at: row.uploaded_at,
         tokens,
-        tags: row.tags ?? [],
+        tags: (row.tags ?? []).map((t) => ({ value: t.tag, tag_kind: t.tag_kind })),
         bestPrompt,
       };
     })
@@ -204,17 +204,17 @@ export async function listAllTags(): Promise<ListAllTagsResult> {
 
   const { data, error } = await supabase
     .from("tags")
-    .select("value, tag_kind")
+    .select("tag, tag_kind")
     .eq("user_id", user.id);
   if (error) return { ok: false, error: error.message };
 
-  // 같은 (value, tag_kind) 빈도 집계
+  // 같은 (tag, tag_kind) 빈도 집계 — 외부 인터페이스는 'value'로 normalize
   const counter = new Map<string, { value: string; tag_kind: string; count: number }>();
   for (const row of data ?? []) {
-    const key = `${row.tag_kind}:${row.value}`;
+    const key = `${row.tag_kind}:${row.tag}`;
     const prev = counter.get(key);
     if (prev) prev.count++;
-    else counter.set(key, { value: row.value, tag_kind: row.tag_kind, count: 1 });
+    else counter.set(key, { value: row.tag, tag_kind: row.tag_kind, count: 1 });
   }
   const tags = [...counter.values()].sort(
     (a, b) =>

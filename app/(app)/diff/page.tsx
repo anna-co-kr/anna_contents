@@ -14,12 +14,11 @@ import DiffPicker, {
  * proxy.ts 미들웨어가 비로그인 redirect를 담당하므로 본 페이지는 로그인 전제.
  * cacheComponents: true 환경이라 dynamic API 사용 시 Suspense 경계 필수.
  */
-export default async function DiffPage({
+export default function DiffPage({
   searchParams,
 }: {
   searchParams: Promise<{ a?: string; b?: string }>;
 }) {
-  const { a, b } = await searchParams;
   return (
     <section className="space-y-4">
       <header className="space-y-1">
@@ -39,19 +38,18 @@ export default async function DiffPage({
           <p className="text-sm text-muted-foreground">페어 목록 불러오는 중...</p>
         }
       >
-        <DiffPickerLoader initialA={a} initialB={b} />
+        <DiffPickerLoader searchParams={searchParams} />
       </Suspense>
     </section>
   );
 }
 
 async function DiffPickerLoader({
-  initialA,
-  initialB,
+  searchParams,
 }: {
-  initialA?: string;
-  initialB?: string;
+  searchParams: Promise<{ a?: string; b?: string }>;
 }) {
+  const { a: initialA, b: initialB } = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
