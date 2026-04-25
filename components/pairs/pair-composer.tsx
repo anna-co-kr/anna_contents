@@ -8,6 +8,7 @@ import {
   useTransition,
   type FormEvent,
 } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useDropzone, type FileRejection } from "react-dropzone";
 import {
@@ -288,7 +289,15 @@ export function PairComposer({ onSubmitted }: PairComposerProps) {
         />
         {referenceId && (
           <p className="text-[11px] text-muted-foreground">
-            레퍼런스 연결됨 · <span className="font-mono">{referenceId.slice(0, 8)}…</span>
+            레퍼런스 연결됨 ·{" "}
+            <Link
+              href={`/library/${referenceId}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-mono text-token-style underline-offset-2 hover:underline"
+            >
+              {referenceId.slice(0, 8)}…
+            </Link>
           </p>
         )}
       </div>

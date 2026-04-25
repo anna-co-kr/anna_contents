@@ -171,13 +171,19 @@ export function SnippetList({
         tool: snippet.tool,
         language: snippet.language,
       });
+      const baseDescription =
+        outcome === "clipboard"
+          ? "Cmd+V로 바로 붙여넣을 수 있어요"
+          : outcome === "exec"
+            ? "구형 환경에서 복사됨 (execCommand 폴백)"
+            : "수동 복사 창이 떴어요 — 직접 Ctrl+C 해주세요";
       toast.success("프롬프트 복사 완료", {
-        description:
-          outcome === "clipboard"
-            ? "Cmd+V로 바로 붙여넣을 수 있어요"
-            : outcome === "exec"
-              ? "구형 환경에서 복사됨 (execCommand 폴백)"
-              : "수동 복사 창이 떴어요 — 직접 Ctrl+C 해주세요",
+        description: `${baseDescription} · 페어 로그에서 결과를 기록하세요`,
+        action: {
+          label: "페어 로그 →",
+          onClick: () => router.push("/pairs"),
+        },
+        duration: 6000,
       });
     } catch (e) {
       toast.error("복사 실패", {

@@ -337,6 +337,7 @@ export type PairListItem = {
   sessionId: string;
   createdAt: string;
   resultImagePath: string | null;
+  referenceId: string | null;
 };
 
 export async function listPairs(opts?: {
@@ -369,7 +370,7 @@ export async function listPairs(opts?: {
       iteration_count_cumulative,
       session_id,
       created_at,
-      prompts:prompt_id ( prompt_text, tool, language, self_rating )
+      prompts:prompt_id ( prompt_text, tool, language, self_rating, reference_id )
       `,
     )
     .eq("user_id", ctx.userId)
@@ -387,6 +388,7 @@ export async function listPairs(opts?: {
           tool: PromptTool;
           language: PromptLanguage;
           self_rating: number | null;
+          reference_id: string | null;
         }
       | null;
     return {
@@ -402,6 +404,7 @@ export async function listPairs(opts?: {
       sessionId: row.session_id,
       createdAt: row.created_at,
       resultImagePath: row.result_image_url,
+      referenceId: prompt?.reference_id ?? null,
     };
   });
 

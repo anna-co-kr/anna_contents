@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Pin, Sparkles, Star } from "lucide-react";
+import Link from "next/link";
+import { ExternalLink, Pin, Sparkles, Star } from "lucide-react";
 import {
   LANGUAGE_DISPLAY_NAME,
   TOOL_DISPLAY_NAME,
@@ -35,6 +36,7 @@ export type PairListRow = {
   iterationCount: number;
   createdAt: string;
   resultImageUrl: string | null;
+  referenceId: string | null;
 };
 
 export type PairListProps = {
@@ -195,6 +197,16 @@ function PairRow({ row }: { row: PairListRow }) {
             <span className="inline-flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-primary-foreground">
               <Pin className="size-3 fill-current" /> 최종 채택
             </span>
+          )}
+          {row.referenceId && (
+            <Link
+              href={`/library/${row.referenceId}`}
+              className="inline-flex items-center gap-1 rounded-full border border-token-style/40 bg-token-style/10 px-2 py-0.5 text-token-style transition hover:bg-token-style/20"
+              title="이 프롬프트를 가져온 레퍼런스로 이동"
+            >
+              <ExternalLink className="size-3" />
+              레퍼런스 #{row.referenceId.slice(0, 8)}
+            </Link>
           )}
         </div>
         <p className="line-clamp-3 font-mono text-xs text-foreground">

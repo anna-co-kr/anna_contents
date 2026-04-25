@@ -58,6 +58,7 @@ async function PairListShell() {
       resultImageUrl: r.resultImagePath
         ? await getSignedPairResultUrl(r.resultImagePath)
         : null,
+      referenceId: r.referenceId,
     })),
   );
 
