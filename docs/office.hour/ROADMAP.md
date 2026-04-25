@@ -559,26 +559,21 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
   - 예상 소요: 30분
   - 의존: Task 024
 
-- [ ] 대기 **Task 026: F005 태그·키워드 검색 구현** (F005 선택 시)
+- [x] 진행 **Task 026: F005 태그·키워드 검색 구현** — 사전 본진행 (2026-04-26)
   - 목표: 태그 다중 필터 + 프롬프트 텍스트·토큰 값·notes에 대한 ILIKE 키워드 검색. 외부 임베딩 API 없음
   - 참조 PRD 기능: F005 (PRD 재정의), Claude Code 컴패니언 모델
-  - 완료 기준:
-    - `/search` 페이지: 키워드 입력 + 태그 다중 선택(tag_kind별 그룹) + tool·language 추가 필터
-    - `app/api/search/filter/route.ts` (또는 서버 컴포넌트 직접 쿼리) — Supabase 쿼리:
-      - 키워드 매칭: `references.notes ILIKE '%keyword%' OR reference_tokens.tokens::text ILIKE '%keyword%' OR prompts.prompt_text ILIKE '%keyword%'`
-      - 태그 교집합: `tags` 테이블 JOIN, 선택된 tag 값 모두 포함하는 references만 반환
-      - 결과는 `reference_tokens.is_active = true`로 필터
-    - 결과 목록 (썸네일 + 매칭 토큰 하이라이트, 연결된 성공 프롬프트 스니펫 self_rating ≥ 4 강조 노출)
-    - **pgvector·Voyage 관련 일체 없음** — `reference_tokens.embedding` 컬럼도 존재하지 않음
-    - 스코프 주의 문구: 레퍼런스 1000건 초과 시 pgvector 도입 재검토 (현재 1인 ~100-500건 예상)
-  - 테스트 체크리스트 (Playwright MCP):
-    - [ ] 키워드 입력 시 토큰·notes·프롬프트 텍스트에서 매칭되는 레퍼런스 반환 확인
-    - [ ] 태그 다중 선택 시 교집합 동작 확인 (모든 선택 태그 포함하는 것만)
-    - [ ] tool·language 필터 조합 동작 확인
-    - [ ] 0 결과 시 빈 상태 UI 표시 확인
-    - [ ] 연결된 성공 프롬프트 스니펫 표시 확인
-  - 예상 소요: 2시간 (임베딩 파이프라인·hnsw 인덱스·backfill 스크립트 전부 제거돼 단축)
-  - 의존: Task 025 (F005 선택)
+  - **사전 본진행 완료**:
+    - [x] `/search` 페이지: 키워드 입력 + tool 다중 + language 다중 + 태그 교집합 (tag_kind별 그룹)
+    - [x] `app/(app)/search/actions.ts` Server Action — `searchReferences` + `listAllTags`
+      - 태그 교집합: 클라이언트 후처리 (선택된 모든 tag 보유 reference_id 집합)
+      - 키워드 ILIKE: 클라이언트 후처리 (notes·tokens text·prompts text 50건 limit 안에서)
+      - tool/language: 클라이언트 후처리 (해당 ref의 prompts에 매치 있는 것만)
+    - [x] `components/search/search-form.tsx` Client — 키워드·tool·lang·태그 form + 결과 카드
+    - [x] 결과 카드: 썸네일·subject/style 미리보기 + 키워드 `<mark>` 하이라이트 + best prompt 칩(self_rating ≥ 4) 강조
+    - [x] **pgvector·Voyage 관련 일체 없음** — embedding 컬럼 미존재
+  - **잔여**: Playwright MCP 5건 체크리스트는 안나 V1.5 F005 선택 후 진행
+  - 실제 소요: 1.5시간 (스켈레톤 + Server Action + Client form + 검증)
+  - 의존: Task 025 (F005 선택) — **사전 진행으로 의존 우회**. 안나 도구 실측 시 즉시 사용 가능
 
 - [ ] 대기 **Task 027: F004 토큰 diff UI 완성** (F004 선택 또는 Task 018 이월)
   - 목표: Task 018 이월분 또는 신규 F004 완성
@@ -745,7 +740,7 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
 - **Phase 0 (선행)**: 0/3 Task 완료
 - **Phase 1 (Week 1, D1-D7)**: 13/13 Task **완료** 🎉 (Task 001~008 ✓ · Task 008-1 ✓ Vercel preview 성공 · Task 009 B 재설계로 Task 008에 흡수 삭제 · Task 010~013 ✓) — **F001 + F002 전체 UX + preview 배포 검증 완성**. Production URL: https://anna-contents.vercel.app/
 - **Phase 2 (Week 2, D8-D14)**: 10/10 Task 완료 또는 진행 (Task 014·015·016·016-1·016-3·**017 PASS**·**018**·**020** + **Task 021 D-1 베이스라인 진행** — Task 019 영상 트랙 안나 결정, Task 021 D14 안나 입력 보류)
-- **Phase 3 (Week 3, D15-D21)**: 2/11 Task 완료 또는 진행 (Task 030-1 ✅ + **Task 028 사전 본진행** F006 리믹스 페이지 — 2026-04-26 V1.5 사전 진행, 안나 도구 실측 시 즉시 사용 가능)
+- **Phase 3 (Week 3, D15-D21)**: 3/11 Task 완료 또는 진행 (Task 030-1 ✅ + **Task 026 ·028 사전 본진행** F005 검색·F006 리믹스 — 2026-04-26 V1.5 후보 2건 동시 사전 진행, 안나 도구 실측 시 즉시 사용 가능)
 
 ## 기록할 문서 리스트
 

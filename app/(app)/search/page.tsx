@@ -1,3 +1,12 @@
+import SearchForm from "@/components/search/search-form";
+
+/**
+ * Task 026 (F005) — 태그·키워드 검색 (V1.5).
+ *
+ * 외부 임베딩 API 0. Supabase + 클라이언트 후처리 ILIKE.
+ * 검색 대상: references.notes / reference_tokens.tokens 6 키 / prompts.prompt_text
+ * 추가 필터: tool 다중 / language 다중 / 태그 교집합
+ */
 export default function SearchPage() {
   return (
     <section className="space-y-4">
@@ -9,9 +18,11 @@ export default function SearchPage() {
           </span>
         </div>
         <p className="text-sm text-muted-foreground">
-          태그 다중 필터 · 프롬프트 텍스트 ILIKE 검색 (외부 임베딩 API 없음, Task 026에서 구현 예정)
+          notes · 6차원 토큰 · 프롬프트 텍스트에 대한 ILIKE 키워드 검색 + 태그 교집합 + tool/language 필터 (외부 임베딩 API 0).
         </p>
       </header>
+
+      <SearchForm />
     </section>
   );
 }
