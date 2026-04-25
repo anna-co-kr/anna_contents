@@ -592,7 +592,7 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
 
 ### D19 — 리믹스 또는 QA
 
-- [ ] 대기 **Task 028: F006 리믹스 요청 프롬프트 생성기** (선택)
+- [x] 진행 **Task 028: F006 리믹스 요청 프롬프트 생성기** (사전 본진행, 2026-04-26)
   - 목표: 기준 레퍼런스 + 새 주제 → **클라이언트 템플릿 엔진**으로 Claude Code에 붙여넣을 완성된 요청 문장 조립 → 클립보드. API 호출 0. 안나의 프롬프트 활용능력 gap을 가장 직접 메우는 기능
   - 참조 PRD 기능: F006 (PRD 재정의), Claude Code 컴패니언 모델
   - 완료 기준:
@@ -663,8 +663,14 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
     - **[Claude Code로 요청 복사]** 버튼 (클립보드, 실패 시 textarea 폴백)
     - 안나가 Claude Code에서 후보 3개 받아 마음에 드는 것 복사 → 페어 로그 페이지에 붙여넣기 (Cmd+V 스마트 매칭 + `prompts.source='remix'` 자동 태깅 + `reference_id=기준 레퍼런스` 자동 연결)
     - **채택률 측정 훅**: 페어 로그에 paste된 프롬프트가 `source='remix'`이면 `remix_origin_reference_id` 같은 메타와 연계해 Phase 3 실측에서 "리믹스 제안 → 실제 MJ/NBP 실행 비율" 집계 (구현은 기본 `source='remix'` 필드만으로도 충분)
-  - 예상 소요: 2시간 (API 연동·응답 파싱 전부 제거, 클라이언트 템플릿만)
-  - 의존: Task 025
+  - **사전 본진행 완료** (2026-04-26):
+    - [x] `lib/remix/template-engine.ts` — 6 (tool, language) 조합 + defaultLanguageFor (테스트 8/8 PASS)
+    - [x] `app/(app)/remix/page.tsx` — Server: references + best tool(self_rating ≥ 4 최근) JOIN
+    - [x] `components/remix/remix-composer.tsx` — Client: 기준 ref select + tool 3-way + lang 2-way (override 표시) + 새 주제 + 토큰 펼치기 + 실시간 프리뷰 + [Claude Code로 요청 복사] (clipboard fallback)
+    - 페어 로그 paste 후 `source='remix'` 자동 태깅 — Task 028 본진행 또는 Task 015 paste-parser 보강 시점에 추가 검토
+  - **잔여 (안나 V1.5 F006 선택 시 보강)**: source='remix' 태깅 + Cmd+V 스마트 매칭 reference_id 자동 연결
+  - 실제 소요: 1.5시간 (lib + 페이지 + 컴포넌트 + 타입 fix)
+  - 의존: Task 025 — **사전 진행으로 의존 우회**. 안나 D15-D17 실측 시점에 F006 선택 → 즉시 사용 가능
 
 - [ ] 대기 **Task 029: `/qa` 스킬로 전체 QA 테스트**
   - 목표: Playwright MCP 기반 E2E QA — 모든 페이지 + 핵심 플로우
@@ -739,7 +745,7 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
 - **Phase 0 (선행)**: 0/3 Task 완료
 - **Phase 1 (Week 1, D1-D7)**: 13/13 Task **완료** 🎉 (Task 001~008 ✓ · Task 008-1 ✓ Vercel preview 성공 · Task 009 B 재설계로 Task 008에 흡수 삭제 · Task 010~013 ✓) — **F001 + F002 전체 UX + preview 배포 검증 완성**. Production URL: https://anna-contents.vercel.app/
 - **Phase 2 (Week 2, D8-D14)**: 10/10 Task 완료 또는 진행 (Task 014·015·016·016-1·016-3·**017 PASS**·**018**·**020** + **Task 021 D-1 베이스라인 진행** — Task 019 영상 트랙 안나 결정, Task 021 D14 안나 입력 보류)
-- **Phase 3 (Week 3, D15-D21)**: 1/11 Task 완료 (Task 030-1 ✅ 조기 진행 — 2026-04-26 백업 스크립트 추가, V1.5 기능 선택에 따라 변동)
+- **Phase 3 (Week 3, D15-D21)**: 2/11 Task 완료 또는 진행 (Task 030-1 ✅ + **Task 028 사전 본진행** F006 리믹스 페이지 — 2026-04-26 V1.5 사전 진행, 안나 도구 실측 시 즉시 사용 가능)
 
 ## 기록할 문서 리스트
 
