@@ -413,7 +413,7 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
 
 ### D10 — V1 코어 게이트 (CRITICAL)
 
-- [ ] 대기 **Task 017: D10 게이트 — V1 코어 E2E 점검 (3-tier)** — **D2 CEO 리뷰 반영**
+- [x] 진행 **Task 017: D10 게이트 — V1 코어 E2E 점검 (3-tier)** — 자동 10/10 PASS, PARTIAL 판정 (안나 수동 3건 대기, 2026-04-25)
   - 목표: F001·F002·F003 전체 플로우가 한 번에 동작하는지 확인해 PASS / PARTIAL / FAIL 판정
   - 참조 PRD 기능: F001, F002, F003
   - 공통 체크리스트:
@@ -715,7 +715,7 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
 
 - **Phase 0 (선행)**: 0/3 Task 완료
 - **Phase 1 (Week 1, D1-D7)**: 13/13 Task **완료** 🎉 (Task 001~008 ✓ · Task 008-1 ✓ Vercel preview 성공 · Task 009 B 재설계로 Task 008에 흡수 삭제 · Task 010~013 ✓) — **F001 + F002 전체 UX + preview 배포 검증 완성**. Production URL: https://anna-contents.vercel.app/
-- **Phase 2 (Week 2, D8-D14)**: 4/9 Task 완료 (Task 014·015·016·016-1 — D10 게이트 결과에 따라 Task 수 변동)
+- **Phase 2 (Week 2, D8-D14)**: 5/9 Task 완료 (Task 014·015·016·016-1 + Task 017 자동점검 PARTIAL)
 - **Phase 3 (Week 3, D15-D21)**: 0/11 Task 완료 (Task 030-1 백업 스크립트 추가, V1.5 기능 선택에 따라 변동)
 
 ## 기록할 문서 리스트
