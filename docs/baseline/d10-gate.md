@@ -55,3 +55,26 @@
 ---
 
 **다음 단계**: 안나가 위 수동 3건을 30분 안에 점검 → 본 문서 판정 PASS로 갱신 → Task 020(D13 배포) 자격 확정.
+
+---
+
+## 2026-04-26 — production 배포 진행 + 자동 분석 1건 검증
+
+**Task 020 완료**. production URL https://anna-contents.vercel.app/ 에서 V1 코어 동작 확인:
+
+| 체크 항목 | 결과 |
+|---|---|
+| `/`·`/login`·`/library` curl 헬스체크 | 307·200·307 ✓ |
+| Supabase Auth Site URL 전환 (안나 dashboard 작업) | localhost → production + 둘 다 redirect URL 허용 ✓ |
+| 환경변수 3종 (`NEXT_PUBLIC_SUPABASE_URL`, `_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`) | 세팅 ✓ |
+| production DB 인스타그램 URL 드롭 → OG 썸네일 저장 → 자동 분석 1건 (ref `99586564`, source=`claude-code`) | ✓ 한국 패션 에디토리얼 그룹샷 → `modern korean editorial` 매칭 |
+| production smoke spec 자동 회귀 보존 | `tests/e2e/task-020-production-smoke.spec.ts` 3건 read-only |
+
+**Task 017 PARTIAL 갱신 진척**:
+- 수동 1 (URL 드롭): 인스타 1건 + 라우틴 누적 100+건 = 충족 ✓
+- 수동 2 (Claude Code 왕복): paste 줄바꿈 차단 발생 → 자동 분석 흐름으로 충족 + prompt-builder single-line 전환으로 미래 paste 안정화
+- 수동 3 (실 사용 1회 왕복): **여전히 미완** (안나가 NBP/MJ로 실제 이미지 생성 + 페어 저장 1건 시연 필요) → PASS 갱신 보류
+
+**부수 보강 (paste UX)**: `lib/claude-code/prompt-builder.ts`에 `format` 옵션 추가, default `singleline`. 안나의 데스크탑 앱이 multi-line paste를 줄 단위로 send해 [Claude Code 분석 요청 복사] 버튼 paste 시 line 단위 메시지 분리되던 문제 해소. 자동 분석 흐름이 본질적 우회책으로 작동하므로 paste 자체 사용 빈도는 낮을 것.
+
+**판정 유지**: PARTIAL (Task 018 차단). 안나 실 사용 1회 시연 시점에 PASS 갱신.

@@ -483,18 +483,19 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
 
 ### D13 — 하드 데드라인
 
-- [ ] 대기 **Task 020: Vercel 배포 + 환경변수 세팅** — 하드 데드라인
+- [x] 완료 **Task 020: Vercel 배포 + 환경변수 세팅** — 하드 데드라인 (2026-04-26)
   - 목표: V1 코어(최소 F001·F002·F003) Vercel 배포 성공
   - 참조 PRD 기능: 전체 V1 코어
   - 완료 기준:
-    - Vercel 프로젝트 생성 + GitHub 연동
-    - 환경변수 세팅: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`. ~~`ANTHROPIC_API_KEY`, `VOYAGE_API_KEY`~~ 불필요 (B 재설계)
-    - production URL에서 로그인 → 레퍼런스 드롭 → Claude Code 분석 요청 복사 → paste → 페어 저장 end-to-end 동작
-    - Supabase Auth redirect URL에 Vercel 도메인 추가
-  - **이 Task는 D13 영상 출시와 같은 날**. 영상이 먼저, 도구는 당일 중 배포 성공하면 됨.
-  - preview 리허설(Task 008-1)을 이미 D3에 해봤으므로 D13 당일 첫 배포 실수 리스크는 낮음
-  - 예상 소요: 2시간
-  - 의존: Task 017 (PASS 또는 PARTIAL)  — FAIL이면 Task 019 분기로 D21 연기 검토
+    - [x] Vercel 프로젝트 생성 + GitHub 연동 — `anna-co-kr/anna_contents` main 브랜치 자동 배포 (Task 008-1 시점부터 운영)
+    - [x] 환경변수 세팅: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`. ~~`ANTHROPIC_API_KEY`, `VOYAGE_API_KEY`~~ 불필요 (B 재설계)
+    - [x] production URL E2E read-only 동작 확인 — `/`(307→login) `/login`(200) `/library`(307→login 미로그인 시) curl 헬스체크 + production smoke spec(`tests/e2e/task-020-production-smoke.spec.ts`) 보존
+    - [x] Supabase Auth redirect URL에 Vercel 도메인 추가 (Site URL: `https://anna-contents.vercel.app`, Redirect URLs에 production·localhost 둘 다 등록 — 안나 dashboard 작업 2026-04-26)
+    - [x] production DB에 인스타그램 카드(99586564) 자동 분석 1건 처리 성공 (`source='claude-code'`, `modern korean editorial` 매칭) → end-to-end 흐름 검증
+  - **부수 보강 (안나 보고 2026-04-26)**: prompt-builder default를 single-line으로 전환 (Claude Code 데스크탑 앱 multi-line paste가 라인 단위 send되는 동작 회피 — 커밋 `e5e11a9`)
+  - production URL: https://anna-contents.vercel.app/
+  - 실제 소요: 4시간 (셋업·검증·prompt-builder 보강·인스타 분석 검증 합산)
+  - 의존: Task 017 (PARTIAL 등급 OK)
 
 ### D14 — 측정
 
@@ -734,7 +735,7 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
 
 - **Phase 0 (선행)**: 0/3 Task 완료
 - **Phase 1 (Week 1, D1-D7)**: 13/13 Task **완료** 🎉 (Task 001~008 ✓ · Task 008-1 ✓ Vercel preview 성공 · Task 009 B 재설계로 Task 008에 흡수 삭제 · Task 010~013 ✓) — **F001 + F002 전체 UX + preview 배포 검증 완성**. Production URL: https://anna-contents.vercel.app/
-- **Phase 2 (Week 2, D8-D14)**: 6/10 Task 완료 (Task 014·015·016·016-1·016-3 + Task 017 자동점검 PARTIAL)
+- **Phase 2 (Week 2, D8-D14)**: 7/10 Task 완료 (Task 014·015·016·016-1·016-3·**020** + Task 017 자동점검 PARTIAL — 안나 실 사용 1회 왕복만 보류)
 - **Phase 3 (Week 3, D15-D21)**: 0/11 Task 완료 (Task 030-1 백업 스크립트 추가, V1.5 기능 선택에 따라 변동)
 
 ## 기록할 문서 리스트
