@@ -5,8 +5,10 @@ import {
   useEffect,
   useRef,
   useState,
+  useTransition,
   type FormEvent,
 } from "react";
+import { useRouter } from "next/navigation";
 import { useDropzone, type FileRejection } from "react-dropzone";
 import {
   ImagePlus,
@@ -18,6 +20,7 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "sonner";
+import { createPair } from "@/app/(app)/pairs/actions";
 import {
   DEFAULT_LANGUAGE_BY_TOOL,
   LANGUAGE_DISPLAY_NAME,
@@ -67,6 +70,8 @@ export type PairComposerProps = {
 };
 
 export function PairComposer({ onSubmitted }: PairComposerProps) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const [tool, setTool] = useState<PromptTool>("nano-banana");
   const [language, setLanguage] = useState<PromptLanguage>(
     DEFAULT_LANGUAGE_BY_TOOL["nano-banana"],
@@ -78,9 +83,10 @@ export function PairComposer({ onSubmitted }: PairComposerProps) {
   const [satisfaction, setSatisfaction] = useState<number | null>(null);
   const [isFinalPick, setIsFinalPick] = useState(false);
   const [results, setResults] = useState<PreparedResult[]>([]);
-  const [submitting, setSubmitting] = useState(false);
   const [smartMatch, setSmartMatch] = useState<RecentCopiedPrompt | null>(null);
   const previewUrlsRef = useRef<Set<string>>(new Set());
+
+  const submitting = isPending;
 
   // 세션 초기화 (여러 탭 공유). 저장은 실제 제출 시에만 touch.
   useEffect(() => {
@@ -185,33 +191,38 @@ export function PairComposer({ onSubmitted }: PairComposerProps) {
   });
 
   const handleSubmit = useCallback(
-    async (e: FormEvent) => {
+    (e: FormEvent) => {
       e.preventDefault();
       if (!canSubmit) return;
-      setSubmitting(true);
-      try {
-        // Task 015에서 Server Action / API 연결 예정
-        // UI 단독 검증용으로 payload를 console에만 노출
-        const payload = {
-          tool,
-          language,
-          promptText: promptText.trim(),
-          selfRating,
-          satisfaction,
-          isFinalPick,
-          referenceId,
-          resultFiles: results.map((r) => ({
-            name: r.file.name,
-            size: r.file.size,
-            type: r.file.type,
-          })),
-        };
-        console.debug("[pair-composer] submit payload", payload);
+      const sessionId = ensureSessionId();
+      const fd = new FormData();
+      fd.set("promptText", promptText.trim());
+      fd.set("tool", tool);
+      fd.set("language", language);
+      fd.set("selfRating", selfRating === null ? "" : String(selfRating));
+      fd.set("satisfaction", satisfaction === null ? "" : String(satisfaction));
+      fd.set("isFinalPick", isFinalPick ? "true" : "false");
+      fd.set("referenceId", referenceId ?? "");
+      fd.set("sessionId", sessionId);
+      for (const r of results) {
+        fd.append("results", r.file, r.file.name);
+      }
+
+      startTransition(async () => {
+        const result = await createPair(fd);
+        if (!result.ok) {
+          toast.error("페어 저장 실패", { description: result.error });
+          return;
+        }
         touchSession();
-        toast.info("UI 동작 확인됨 — 저장 API는 Task 015에서 연결 예정", {
-          description: `${TOOL_DISPLAY_NAME[tool]} · ${LANGUAGE_DISPLAY_NAME[language]} · ${results.length}건 첨부`,
+        const range =
+          result.iterationStart === result.iterationEnd
+            ? `#${result.iterationStart}`
+            : `#${result.iterationStart}–${result.iterationEnd}`;
+        toast.success("페어 저장 완료", {
+          description: `${TOOL_DISPLAY_NAME[tool]} · ${LANGUAGE_DISPLAY_NAME[language]} · ${results.length || 0}건 첨부 · iteration ${range}`,
         });
-        // 폼 리셋 (references 연결은 유지)
+        // 폼 리셋 (referenceId는 의도적으로 유지: 같은 레퍼런스 다음 시도)
         setPromptText("");
         setSelfRating(null);
         setSatisfaction(null);
@@ -222,9 +233,8 @@ export function PairComposer({ onSubmitted }: PairComposerProps) {
         }
         setResults([]);
         onSubmitted?.();
-      } finally {
-        setSubmitting(false);
-      }
+        router.refresh();
+      });
     },
     [
       canSubmit,
@@ -237,6 +247,7 @@ export function PairComposer({ onSubmitted }: PairComposerProps) {
       referenceId,
       results,
       onSubmitted,
+      router,
     ],
   );
 
