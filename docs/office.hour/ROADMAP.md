@@ -342,7 +342,7 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
 
 ### D8 — F003 프롬프트 페어 로그
 
-- [ ] 대기 **Task 014: F003 프롬프트 페어 로그 페이지 UI**
+- [x] 완료 **Task 014: F003 프롬프트 페어 로그 페이지 UI** (2026-04-25)
   - 목표: `/pairs` 페이지에 프롬프트 입력 + 결과 이미지 업로드 + 만족도 마킹 UI
   - 참조 PRD 기능: F003 (PRD 57, 150-160)
   - 완료 기준:
@@ -373,7 +373,7 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
   - 예상 소요: 5시간
   - 의존: Task 003, 006
 
-- [ ] 대기 **Task 015: F003 페어 저장 API + 세션 이터레이션 카운트**
+- [x] 완료 **Task 015: F003 페어 저장 API + 세션 이터레이션 카운트** (2026-04-25)
   - 목표: 페어 저장 시 `prompts` + `pairs` 테이블 동시 기록, `iteration_count_cumulative` 자동 증가, **prompts.tool/language/self_rating 필수 저장**
   - 참조 PRD 기능: F003 (PRD 159)
   - 완료 기준:
@@ -391,7 +391,7 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
   - 예상 소요: 3시간
   - 의존: Task 014
 
-- [ ] 대기 **Task 016: F003 레퍼런스 ↔ 페어 연결**
+- [x] 완료 **Task 016: F003 레퍼런스 ↔ 페어 연결** (2026-04-25)
   - 목표: 레퍼런스 상세에서 `[copy prompt]` → 페어 로그 이동 플로우 + `prompt.reference_id` 연결
   - 참조 PRD 기능: F003 + F002 연계 (PRD 157)
   - 완료 기준:
@@ -400,7 +400,7 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
   - 예상 소요: 2시간
   - 의존: Task 013, 015
 
-- [ ] 대기 **Task 016-1: 운영 관측성 기반(ops.md) 1p** — **OBS-1 CEO 리뷰 반영**
+- [x] 완료 **Task 016-1: 운영 관측성 기반(ops.md) 1p** — **OBS-1 CEO 리뷰 반영** (2026-04-25)
   - 목표: D13 배포 후 "왜 Vision이 실패해?" 같은 질문에 답할 수 있도록 로그 접근 경로 정리
   - 참조 PRD 기능: 전체 V1 코어 관측 지원
   - 완료 기준:
@@ -715,7 +715,7 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
 
 - **Phase 0 (선행)**: 0/3 Task 완료
 - **Phase 1 (Week 1, D1-D7)**: 13/13 Task **완료** 🎉 (Task 001~008 ✓ · Task 008-1 ✓ Vercel preview 성공 · Task 009 B 재설계로 Task 008에 흡수 삭제 · Task 010~013 ✓) — **F001 + F002 전체 UX + preview 배포 검증 완성**. Production URL: https://anna-contents.vercel.app/
-- **Phase 2 (Week 2, D8-D14)**: 0/9 Task 완료 (Task 016-1 ops.md 추가, D10 게이트 결과에 따라 Task 수 변동)
+- **Phase 2 (Week 2, D8-D14)**: 4/9 Task 완료 (Task 014·015·016·016-1 — D10 게이트 결과에 따라 Task 수 변동)
 - **Phase 3 (Week 3, D15-D21)**: 0/11 Task 완료 (Task 030-1 백업 스크립트 추가, V1.5 기능 선택에 따라 변동)
 
 ## 기록할 문서 리스트
