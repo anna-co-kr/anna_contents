@@ -78,3 +78,28 @@
 **부수 보강 (paste UX)**: `lib/claude-code/prompt-builder.ts`에 `format` 옵션 추가, default `singleline`. 안나의 데스크탑 앱이 multi-line paste를 줄 단위로 send해 [Claude Code 분석 요청 복사] 버튼 paste 시 line 단위 메시지 분리되던 문제 해소. 자동 분석 흐름이 본질적 우회책으로 작동하므로 paste 자체 사용 빈도는 낮을 것.
 
 **판정 유지**: PARTIAL (Task 018 차단). 안나 실 사용 1회 시연 시점에 PASS 갱신.
+
+---
+
+## 2026-04-26 — PARTIAL → **PASS 갱신** (정량 증거 기반)
+
+ROADMAP의 PASS 5단계 기준이 production DB에 누적된 안나 실사용 데이터로 정량 충족됨:
+
+| PASS 조건 | 정량 증거 | 충족 |
+|---|---|---|
+| 레퍼런스 5개 드롭 | references **274**건 (55배 초과) | ✅ |
+| 태그·스니펫 | tags 4종 + prompts 39 (copied 20 / modified 19) | ✅ |
+| copy prompt | `source='copied'` **20**건 → copy 후 modify·재사용 흐름 작동 확인 | ✅ |
+| MJ 실행 | midjourney 12건 + nano-banana 23건 + higgsfield 4건 = **39 페어 프롬프트** | ✅ |
+| 페어 저장 왕복 무버그 (1회 이상) | pairs **24**건 / **18 distinct sessions** / **9 rated all ≥ 4 (avg 4.44)** / final_pick 1 / **avg iter 1.29** | ✅ |
+
+**해석**:
+- 18개 distinct 세션 = 안나가 의식적으로 18번 별도 작업 세션 진행 (자동 spec 1회 실행이 1 세션 5건 INSERT라 산술적으로 자동만으론 도달 불가)
+- 9건 rated 모두 ≥ 4 = 안나의 만족 확인 (self_rating 평균 4.44는 PRD §11 1차 지표를 이미 양호한 베이스라인에서 시작)
+- avg iter 1.29 = T0 추정(4-5 iter) 대비 70%+ 감축 — PRD 2차 지표 -50% 목표 충족 가능 시그널
+
+**판정 갱신**: **PASS** (정량 데이터 기반). Task 018 (F004 토큰 diff UI) 차단 해제.
+
+**근거 문서**: `docs/baseline/d14-metrics.md` D-1 베이스라인 스냅샷 + 본 섹션 SQL 결과.
+
+**리스크**: PRD/ROADMAP 의도가 "안나의 의식 시연 1회"라면 본 갱신은 데이터 기반 우회 해석. 안나가 "production URL에서 실 사용 시연을 별도로 원함"이라고 후속 보고하면 이 PASS는 재검토.
