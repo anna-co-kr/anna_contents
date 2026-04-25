@@ -124,4 +124,40 @@ group by source;
 
 ---
 
-**최종 갱신**: 2026-04-25 · D13 배포 전 마지막 점검 항목으로 사용
+## 7. 데이터 백업 (Task 030-1, D3 CEO 리뷰 반영)
+
+Supabase free tier 일시정지·프로젝트 이관 리스크에서 안나의 축적 자산(레퍼런스·토큰·태그·프롬프트·페어 + Storage 이미지)을 보호.
+
+### 실행
+
+```bash
+npm run backup
+```
+
+**산출물**: `docs/backup/backup-YYYY-MM-DD.zip` (gitignored, 로컬 보관 전용)
+
+zip 안 구조:
+```
+backup-2026-04-26/
+├── references.json
+├── reference_tokens.json
+├── tags.json
+├── prompts.json
+├── pairs.json
+├── references-thumbnails/   # storage 버킷 1
+└── pair-results/            # storage 버킷 2
+```
+
+### 권장 주기
+
+**매주 금요일 1회** (잔여 큐 처리 + 페어 누적 후 영업주 마감 시점).
+
+### 실패 케이스
+
+- `missing env: ...` → `.env.local`에 `SUPABASE_SERVICE_ROLE_KEY` 누락. Vercel dashboard에 세팅된 키를 로컬 `.env.local`에도 복제.
+- 특정 storage 파일 다운로드 실패 → 콘솔에 `<path>: ...` 로그 출력 + 다른 파일은 계속 진행. 실패 파일은 다음 주 backup 시 재시도.
+- zip CLI 미설치 → macOS 기본 포함. Linux는 `apt install zip` 또는 동등.
+
+---
+
+**최종 갱신**: 2026-04-26 · Task 030-1 백업 스크립트 추가

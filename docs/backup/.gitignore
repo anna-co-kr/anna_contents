@@ -1,0 +1,5 @@
+# Task 030-1 — 로컬 백업 zip은 레포 비대화 방지를 위해 gitignored.
+# 정책: 매주 금요일 `npm run backup` 실행, 임시 디렉터리는 항상 zip으로 압축 후 삭제.
+*.zip
+backup-*/
+!.gitignore

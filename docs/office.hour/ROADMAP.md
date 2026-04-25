@@ -683,19 +683,19 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
   - 예상 소요: 3시간
   - 의존: Task 029
 
-- [ ] 대기 **Task 030-1: 데이터 export 스크립트 + 로컬 백업** — **D3 CEO 리뷰 반영**
+- [x] 완료 **Task 030-1: 데이터 export 스크립트 + 로컬 백업** — **D3 CEO 리뷰 반영** (2026-04-26 조기 진행)
   - 목표: D21 시점 축적 자산(레퍼런스 100+, 성공 페어 30+, Vision 토큰)을 Supabase free tier 일시정지·프로젝트 이관 리스크로부터 보호
   - 참조 PRD 기능: 전체 데이터 모델 보존
   - 완료 기준:
-    - `scripts/export-data.ts` 작성 — Supabase service role 사용
-    - 5개 테이블 (references, reference_tokens, tags, prompts, pairs) 전량 SELECT * → JSON 파일 생성
-    - 2개 Storage 버킷(references-thumbnails, pair-results) 전체 이미지 다운로드
-    - 전체를 `docs/backup/backup-YYYY-MM-DD.zip`로 압축 저장
-    - `docs/backup/.gitignore`에 `*.zip` 추가 (레포 비대화 방지, 로컬 보관 전용)
-    - 스크립트 실행 명령(`npm run backup`)을 `package.json` scripts에 등록
-    - README에 "매주 금요일 `npm run backup` 실행" 안내 추가
-  - 예상 소요: 30분
-  - 의존: Task 024
+    - [x] `scripts/export-data.ts` 작성 — Supabase service role + supabase-js admin
+    - [x] 5개 테이블 (references, reference_tokens, tags, prompts, pairs) 전량 SELECT * → JSON 파일 생성
+    - [x] 2개 Storage 버킷(references-thumbnails, pair-results) 전체 이미지 다운로드 (재귀 list + download)
+    - [x] 전체를 `docs/backup/backup-YYYY-MM-DD.zip`로 압축 저장 + 임시 디렉터리 삭제
+    - [x] `docs/backup/.gitignore`에 `*.zip` + `backup-*/` 추가
+    - [x] 스크립트 실행 명령(`npm run backup`)을 `package.json` scripts에 등록
+    - [x] ~~README~~ → `docs/ops.md` §7에 "매주 금요일 `npm run backup` 실행" 안내 추가 (README는 업스트림 스타터 보존)
+  - 의존 무시 사유: 의존 Task 024는 D17이지만 production에 이미 카드 200+ / 토큰 150+ / 페어 누적 중 — CEO 리뷰 정신(early protect)에 따라 Task 020 직후 즉시 진행
+  - 실제 소요: 30분
 
 ### D21 — 제출
 
@@ -736,7 +736,7 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
 - **Phase 0 (선행)**: 0/3 Task 완료
 - **Phase 1 (Week 1, D1-D7)**: 13/13 Task **완료** 🎉 (Task 001~008 ✓ · Task 008-1 ✓ Vercel preview 성공 · Task 009 B 재설계로 Task 008에 흡수 삭제 · Task 010~013 ✓) — **F001 + F002 전체 UX + preview 배포 검증 완성**. Production URL: https://anna-contents.vercel.app/
 - **Phase 2 (Week 2, D8-D14)**: 7/10 Task 완료 (Task 014·015·016·016-1·016-3·**020** + Task 017 자동점검 PARTIAL — 안나 실 사용 1회 왕복만 보류)
-- **Phase 3 (Week 3, D15-D21)**: 0/11 Task 완료 (Task 030-1 백업 스크립트 추가, V1.5 기능 선택에 따라 변동)
+- **Phase 3 (Week 3, D15-D21)**: 1/11 Task 완료 (Task 030-1 ✅ 조기 진행 — 2026-04-26 백업 스크립트 추가, V1.5 기능 선택에 따라 변동)
 
 ## 기록할 문서 리스트
 
