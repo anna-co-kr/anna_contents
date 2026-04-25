@@ -208,6 +208,15 @@ function PairRow({ row }: { row: PairListRow }) {
               레퍼런스 #{row.referenceId.slice(0, 8)}
             </Link>
           )}
+          <Link
+            href={`/diff?a=${row.pairId}`}
+            className="inline-flex items-center gap-1 rounded-full border border-border bg-muted/40 px-2 py-0.5 text-muted-foreground transition hover:bg-muted"
+            title="이 페어를 다른 페어와 diff 비교 (V1.5)"
+            data-testid={`pair-row-${row.pairId}-diff-link`}
+          >
+            <Sparkles className="size-3" />
+            diff →
+          </Link>
         </div>
         <p className="line-clamp-3 font-mono text-xs text-foreground">
           {row.promptText}

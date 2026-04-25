@@ -575,15 +575,18 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
   - 실제 소요: 1.5시간 (스켈레톤 + Server Action + Client form + 검증)
   - 의존: Task 025 (F005 선택) — **사전 진행으로 의존 우회**. 안나 도구 실측 시 즉시 사용 가능
 
-- [ ] 대기 **Task 027: F004 토큰 diff UI 완성** (F004 선택 또는 Task 018 이월)
+- [x] 진행 **Task 027: F004 토큰 diff UI 완성** (F004 선택 또는 Task 018 이월) — 사전 본진행 (2026-04-26)
   - 목표: Task 018 이월분 또는 신규 F004 완성
   - 참조 PRD 기능: F004 (PRD 69)
   - 완료 기준:
-    - `/diff` 페이지에 페어 2개 선택 → 프롬프트 토큰 diff 시각화
-    - 만족/불만족 마킹 배지 표시
-    - 페어 로그에서 페어 클릭 시 diff 페이지로 이동 연결
-  - 예상 소요: 4시간
-  - 의존: Task 025 (F004 선택)
+    - [x] `/diff` 페이지에 페어 2개 선택 → 프롬프트 토큰 diff 시각화 (Task 018에서 완성)
+    - [x] 만족/불만족 마킹 배지 표시 — `PairMeta`에 self_rating ★ + satisfaction sat + iter# 노출 (Task 018에서 완성)
+    - [x] **페어 로그에서 페어 클릭 시 diff 페이지로 이동 연결** (2026-04-26):
+      - `/diff` 페이지: `searchParams.a / .b` 받아 DiffPicker 초기 selection 자동 설정
+      - `components/pairs/pair-list.tsx` PairRow에 "diff →" 칩 (Sparkles icon, `/diff?a=<pairId>` 링크)
+      - 클릭 → /diff 진입 시 a 페어 자동 선택 + b는 다음 페어 default로 (사용자가 다른 페어 골라 비교)
+  - 실제 소요: 30분 (Task 018 골격 위에 searchParams + 진입 link만)
+  - 의존: Task 025 (F004 선택) — **사전 진행으로 의존 우회**, Task 018 골격까지 합쳐 F004 완전 동작
 
 ### D19 — 리믹스 또는 QA
 
@@ -740,7 +743,7 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
 - **Phase 0 (선행)**: 0/3 Task 완료
 - **Phase 1 (Week 1, D1-D7)**: 13/13 Task **완료** 🎉 (Task 001~008 ✓ · Task 008-1 ✓ Vercel preview 성공 · Task 009 B 재설계로 Task 008에 흡수 삭제 · Task 010~013 ✓) — **F001 + F002 전체 UX + preview 배포 검증 완성**. Production URL: https://anna-contents.vercel.app/
 - **Phase 2 (Week 2, D8-D14)**: 10/10 Task 완료 또는 진행 (Task 014·015·016·016-1·016-3·**017 PASS**·**018**·**020** + **Task 021 D-1 베이스라인 진행** — Task 019 영상 트랙 안나 결정, Task 021 D14 안나 입력 보류)
-- **Phase 3 (Week 3, D15-D21)**: 3/11 Task 완료 또는 진행 (Task 030-1 ✅ + **Task 026 ·028 사전 본진행** F005 검색·F006 리믹스 — 2026-04-26 V1.5 후보 2건 동시 사전 진행, 안나 도구 실측 시 즉시 사용 가능)
+- **Phase 3 (Week 3, D15-D21)**: 4/11 Task 완료 또는 진행 (Task 030-1 ✅ + **Task 026·027·028 사전 본진행** F005 검색 + F004 완성 + F006 리믹스 — 2026-04-26 V1.5 후보 3건 모두 사전 진행, 안나 도구 실측 시 즉시 모두 사용 가능)
 
 ## 기록할 문서 리스트
 

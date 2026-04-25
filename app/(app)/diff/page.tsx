@@ -6,6 +6,7 @@ import DiffPicker, {
 
 /**
  * Task 018 (F004) — V1.5 토큰 diff 페이지.
+ * Task 027 보강 — searchParams a/b로 /pairs → /diff 진입 시 자동 선택.
  *
  * 페어 2개 선택 → 프롬프트 텍스트 단어 단위 diff 시각화 (jsdiff).
  * 동일 언어 비교 권장 (PRD 164-174).
@@ -13,7 +14,12 @@ import DiffPicker, {
  * proxy.ts 미들웨어가 비로그인 redirect를 담당하므로 본 페이지는 로그인 전제.
  * cacheComponents: true 환경이라 dynamic API 사용 시 Suspense 경계 필수.
  */
-export default function DiffPage() {
+export default async function DiffPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ a?: string; b?: string }>;
+}) {
+  const { a, b } = await searchParams;
   return (
     <section className="space-y-4">
       <header className="space-y-1">
@@ -33,13 +39,19 @@ export default function DiffPage() {
           <p className="text-sm text-muted-foreground">페어 목록 불러오는 중...</p>
         }
       >
-        <DiffPickerLoader />
+        <DiffPickerLoader initialA={a} initialB={b} />
       </Suspense>
     </section>
   );
 }
 
-async function DiffPickerLoader() {
+async function DiffPickerLoader({
+  initialA,
+  initialB,
+}: {
+  initialA?: string;
+  initialB?: string;
+}) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -79,5 +91,5 @@ async function DiffPickerLoader() {
     };
   });
 
-  return <DiffPicker pairs={pairs} />;
+  return <DiffPicker pairs={pairs} initialA={initialA} initialB={initialB} />;
 }

@@ -26,10 +26,24 @@ export type DiffPickerPair = {
  * - PRD F004 (164-174): 추가 단어 초록 / 제거 단어 빨강 / 동일 언어 권장
  * - 라이브러리: `diff` (jsdiff, 단어 단위 `diffWords`)
  * - 클라이언트 전용 — 외부 API 호출 0
+ *
+ * Task 027 보강: initialA / initialB props 받아 /pairs → /diff 진입 시 자동 선택.
  */
-export default function DiffPicker({ pairs }: { pairs: DiffPickerPair[] }) {
-  const [aId, setAId] = useState<string>(pairs[0]?.id ?? "");
-  const [bId, setBId] = useState<string>(pairs[1]?.id ?? "");
+export default function DiffPicker({
+  pairs,
+  initialA,
+  initialB,
+}: {
+  pairs: DiffPickerPair[];
+  initialA?: string;
+  initialB?: string;
+}) {
+  const validInitialA = initialA && pairs.some((p) => p.id === initialA) ? initialA : null;
+  const validInitialB = initialB && pairs.some((p) => p.id === initialB) ? initialB : null;
+  const [aId, setAId] = useState<string>(validInitialA ?? pairs[0]?.id ?? "");
+  const [bId, setBId] = useState<string>(
+    validInitialB ?? (validInitialA ? pairs.find((p) => p.id !== validInitialA)?.id ?? "" : pairs[1]?.id ?? ""),
+  );
 
   const pairA = pairs.find((p) => p.id === aId);
   const pairB = pairs.find((p) => p.id === bId);
