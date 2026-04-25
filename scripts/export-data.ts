@@ -39,36 +39,6 @@ function loadEnvLocal() {
   }
 }
 
-async function listAllFiles(
-  supabase: ReturnType<typeof createClient>,
-  bucket: string,
-  prefix = "",
-): Promise<string[]> {
-  const result: string[] = [];
-  const pageSize = 1000;
-  let offset = 0;
-  while (true) {
-    const { data, error } = await supabase.storage
-      .from(bucket)
-      .list(prefix, { limit: pageSize, offset });
-    if (error) throw new Error(`list ${bucket}/${prefix}: ${error.message}`);
-    if (!data || data.length === 0) break;
-    for (const item of data) {
-      const fullPath = prefix ? `${prefix}/${item.name}` : item.name;
-      // 폴더면 재귀, 파일이면 누적 (id 없는 항목 = 폴더)
-      if (item.id) {
-        result.push(fullPath);
-      } else {
-        const nested = await listAllFiles(supabase, bucket, fullPath);
-        result.push(...nested);
-      }
-    }
-    if (data.length < pageSize) break;
-    offset += pageSize;
-  }
-  return result;
-}
-
 async function main() {
   loadEnvLocal();
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -81,6 +51,34 @@ async function main() {
   }
 
   const supabase = createClient(url, key);
+
+  // Storage 버킷 재귀 list — supabase closure 캡처로 SupabaseClient 제네릭 회피
+  async function listAllFiles(bucket: string, prefix = ""): Promise<string[]> {
+    const result: string[] = [];
+    const pageSize = 1000;
+    let offset = 0;
+    while (true) {
+      const { data, error } = await supabase.storage
+        .from(bucket)
+        .list(prefix, { limit: pageSize, offset });
+      if (error) throw new Error(`list ${bucket}/${prefix}: ${error.message}`);
+      if (!data || data.length === 0) break;
+      for (const item of data) {
+        const fullPath = prefix ? `${prefix}/${item.name}` : item.name;
+        // 폴더면 재귀, 파일이면 누적 (id 없는 항목 = 폴더)
+        if (item.id) {
+          result.push(fullPath);
+        } else {
+          const nested = await listAllFiles(bucket, fullPath);
+          result.push(...nested);
+        }
+      }
+      if (data.length < pageSize) break;
+      offset += pageSize;
+    }
+    return result;
+  }
+
   const date = new Date().toISOString().slice(0, 10);
   const baseDir = resolve("docs/backup");
   const outDir = resolve(baseDir, `backup-${date}`);
@@ -109,7 +107,7 @@ async function main() {
     mkdirSync(bucketDir, { recursive: true });
     let files: string[];
     try {
-      files = await listAllFiles(supabase, bucket);
+      files = await listAllFiles(bucket);
     } catch (e) {
       console.error(`  ${bucket}: list ERROR — ${(e as Error).message}`);
       continue;

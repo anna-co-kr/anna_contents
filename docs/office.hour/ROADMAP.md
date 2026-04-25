@@ -459,16 +459,19 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
 
 ### D11-D12 — 조건부 진행
 
-- [ ] 대기 **Task 018: (D10 PASS 시에만) F004 토큰 diff UI 착수**
+- [x] 완료 **Task 018: F004 토큰 diff UI 착수** (2026-04-26, Task 017 PASS 직후)
   - 목표: V1.5의 첫 기능 선행 착수 — 토큰 diff 페이지 골격
   - 참조 PRD 기능: F004 (PRD 69, 164-174)
   - 완료 기준:
-    - `/diff` 페이지에 페어 2개 선택 UI
-    - 프롬프트 텍스트 diff 시각화 (추가 단어 초록, 제거 단어 빨강)
-    - 기본 단어 단위 diff (라이브러리: `diff` 또는 `jsdiff`)
-  - 조건: **Task 017이 PASS 등급일 때만 착수**. PARTIAL 또는 FAIL이면 전량 Week 3로 이월.
-  - 예상 소요: 4시간
-  - 의존: Task 017 (PASS)
+    - [x] `/diff` 페이지에 페어 2개 선택 UI (`select` × 2, 최근 50건 페어 옵션 노출)
+    - [x] 프롬프트 텍스트 diff 시각화 (추가 단어 초록, 제거 단어 빨강 + line-through)
+    - [x] 기본 단어 단위 diff (`diff` 패키지 `diffWords`, 클라이언트 전용)
+    - [x] PRD 권장 "동일 언어 비교" 강조 — 다른 언어 페어 선택 시 amber 경고 노출
+    - [x] 페어 메타 카드(tool/lang/self_rating/satisfaction/iter#) + 레퍼런스 링크
+    - [x] 헤더 nav `토큰 diff (V1.5)` 진입점 (Task 010-3 시점부터 사전 등록됨)
+  - **트레이드오프**: 의존 Task 027(F004 완성)을 V1.5 본선 진행 시 다듬기 가능. 지금은 골격 + diffWords 시각화 + 동일 언어 가드까지.
+  - 실제 소요: 1시간 (사전 스켈레톤 존재 덕분에 단축)
+  - 의존: Task 017 (PASS) ✓
 
 - [ ] 대기 **Task 019: (D10 PARTIAL/FAIL 시) 영상 트랙 전환**
   - 목표: 도구 개발 Pause, 영상 트랙으로 리소스 집중
@@ -738,7 +741,7 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
 
 - **Phase 0 (선행)**: 0/3 Task 완료
 - **Phase 1 (Week 1, D1-D7)**: 13/13 Task **완료** 🎉 (Task 001~008 ✓ · Task 008-1 ✓ Vercel preview 성공 · Task 009 B 재설계로 Task 008에 흡수 삭제 · Task 010~013 ✓) — **F001 + F002 전체 UX + preview 배포 검증 완성**. Production URL: https://anna-contents.vercel.app/
-- **Phase 2 (Week 2, D8-D14)**: 9/10 Task 완료 (Task 014·015·016·016-1·016-3·**017 PASS**·**020** + **Task 021 D-1 베이스라인 진행** — Task 019 영상 트랙 안나 결정, Task 021 D14 안나 입력 보류)
+- **Phase 2 (Week 2, D8-D14)**: 10/10 Task 완료 또는 진행 (Task 014·015·016·016-1·016-3·**017 PASS**·**018**·**020** + **Task 021 D-1 베이스라인 진행** — Task 019 영상 트랙 안나 결정, Task 021 D14 안나 입력 보류)
 - **Phase 3 (Week 3, D15-D21)**: 1/11 Task 완료 (Task 030-1 ✅ 조기 진행 — 2026-04-26 백업 스크립트 추가, V1.5 기능 선택에 따라 변동)
 
 ## 기록할 문서 리스트
