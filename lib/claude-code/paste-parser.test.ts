@@ -109,4 +109,55 @@ describe("parseClaudeCodeResponse — 실패 경로", () => {
       expect(result.error).toContain("mood");
     }
   });
+
+  it("placeholder 거부 — 예시 JSON('...') 6키 그대로 paste 시 차단", () => {
+    const placeholder = {
+      subject: "...",
+      style: "...",
+      lighting: "...",
+      composition: "...",
+      medium: "...",
+      mood: "...",
+    };
+    const result = parseClaudeCodeResponse(JSON.stringify(placeholder));
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.stage).toBe("validate");
+      expect(result.error).toContain("placeholder");
+      // 6 키 모두 placeholder로 식별
+      expect(result.error).toContain("subject");
+      expect(result.error).toContain("mood");
+    }
+  });
+
+  it("placeholder 거부 — 일부 키만 '...' 또는 'TBD'인 경우도 차단", () => {
+    const partial = {
+      ...validJson,
+      style: "...",
+      lighting: "TBD",
+    };
+    const result = parseClaudeCodeResponse(JSON.stringify(partial));
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.stage).toBe("validate");
+      expect(result.error).toContain("style");
+      expect(result.error).toContain("lighting");
+      // 정상 키는 메시지에 안 들어가야 함
+      expect(result.error).not.toContain("subject");
+    }
+  });
+
+  it("placeholder 거부 — '. . .' 점·공백 변형도 차단", () => {
+    const dots = { ...validJson, mood: ". . ." };
+    const result = parseClaudeCodeResponse(JSON.stringify(dots));
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toContain("mood");
+  });
+
+  it("placeholder 거부 — null/undefined 텍스트도 차단", () => {
+    const literal = { ...validJson, subject: "null" };
+    const result = parseClaudeCodeResponse(JSON.stringify(literal));
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toContain("subject");
+  });
 });

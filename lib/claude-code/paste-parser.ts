@@ -72,7 +72,34 @@ export function parseClaudeCodeResponse(raw: string): ParseResult {
     };
   }
 
+  // 5. Placeholder guard — 분석 요청 프롬프트의 예시 JSON("...")을 그대로
+  //    paste한 경우를 거부. Claude Code 응답이라면 의미 있는 영어 단어가 와야 함.
+  const placeholderKeys = Object.entries(result.data)
+    .filter(([, v]) => isPlaceholderValue(v))
+    .map(([k]) => k);
+  if (placeholderKeys.length > 0) {
+    return {
+      ok: false,
+      error: `예시 placeholder 값이 그대로 입력됐습니다 [${placeholderKeys.join(", ")}]. Claude Code 분석 요청을 받아 받은 실제 영어 응답을 붙여넣어주세요.`,
+      stage: "validate",
+    };
+  }
+
   return { ok: true, tokens: result.data };
+}
+
+/**
+ * placeholder 의심 값 판정.
+ * - 빈 문자열은 zod min(1)에서 이미 거부
+ * - "...", ". . .", "TBD", "..." 변형 등 안나가 prompt 예시를 그대로 paste한 케이스
+ * - 너무 짧은(2자 이하) 또는 점·공백·하이픈만 있는 경우
+ */
+function isPlaceholderValue(value: string): boolean {
+  const v = value.trim();
+  if (v.length <= 2) return true;
+  if (/^[\s.\-_…]+$/.test(v)) return true;
+  if (/^(tbd|n\/a|todo|fixme|xxx|undefined|null)$/i.test(v)) return true;
+  return false;
 }
 
 /**
