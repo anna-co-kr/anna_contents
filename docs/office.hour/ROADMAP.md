@@ -499,13 +499,16 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
 
 ### D14 — 측정
 
-- [ ] 대기 **Task 021: 48h 반응 데이터 + 도구 사용 기록 수집**
+- [x] 진행 **Task 021: 48h 반응 데이터 + 도구 사용 기록 수집** — D-1 베이스라인 스냅샷 완료, D14 양식 안나 입력 대기 (2026-04-26)
   - 목표: 영상 반응(도달/저장/DM/팔로워 변화) + 도구 사용 로그 수집
   - 참조 PRD 기능: 측정용 (design doc §11)
   - 완료 기준:
-    - `docs/baseline/d14-metrics.md` 에 48h 지표 기록
-    - Prompt Studio 사용 세션 수, 레퍼런스 축적 수, 페어 저장 수, 이터레이션 카운트 스냅샷
-  - 예상 소요: 1시간
+    - [x] `docs/baseline/d14-metrics.md` 베이스라인 양식 작성
+    - [x] D-1 스냅샷: references 274 / tokens active 242 (auto 211 + manual 31) / pairs 24 / prompts 39 / **avg self_rating 4.44** / 분석 대기 32건
+    - [x] 도구별 prompt 분포: NBP-ko 19 (1순위 ✓) / MJ-en 12 / NBP-en 4 / Higgsfield-en 4
+    - [x] 자동 분석 라우틴 운영 통계 6 라운드 + 시연 = 186건 처리
+    - [ ] D13 영상 출시 후 +48h 시점 양식 갱신 (IG 도달·저장·DM·팔로워 + 변동 SQL 재실행) — 안나 입력 대기
+  - 예상 소요: 1시간 (양식 작성 30분 ✓ + 영상 출시 후 갱신 30분 보류)
   - 의존: Task 020
 
 ## Phase 3: Week 3 (D15-D21) — 도구 실측 + V1.5 확장 + 강의 제출
@@ -735,7 +738,7 @@ Prompt Studio v0.5는 안나(1인 크리에이터)를 위한 프롬프트 수렴
 
 - **Phase 0 (선행)**: 0/3 Task 완료
 - **Phase 1 (Week 1, D1-D7)**: 13/13 Task **완료** 🎉 (Task 001~008 ✓ · Task 008-1 ✓ Vercel preview 성공 · Task 009 B 재설계로 Task 008에 흡수 삭제 · Task 010~013 ✓) — **F001 + F002 전체 UX + preview 배포 검증 완성**. Production URL: https://anna-contents.vercel.app/
-- **Phase 2 (Week 2, D8-D14)**: 7/10 Task 완료 (Task 014·015·016·016-1·016-3·**020** + Task 017 자동점검 PARTIAL — 안나 실 사용 1회 왕복만 보류)
+- **Phase 2 (Week 2, D8-D14)**: 8/10 Task 완료 또는 진행 (Task 014·015·016·016-1·016-3·**020** + Task 017 PARTIAL + **Task 021 D-1 베이스라인 진행** — 안나 영상 출시·실 사용 1회 보류)
 - **Phase 3 (Week 3, D15-D21)**: 1/11 Task 완료 (Task 030-1 ✅ 조기 진행 — 2026-04-26 백업 스크립트 추가, V1.5 기능 선택에 따라 변동)
 
 ## 기록할 문서 리스트
