@@ -34,6 +34,13 @@ export const PAIR_PREVIEW_TRANSFORM: ThumbnailTransform = {
   quality: 70,
 };
 
+/** 검색 결과·리믹스 picker처럼 작은 보조 썸네일용 (~80~120px 카드). */
+export const LIST_THUMBNAIL_TRANSFORM: ThumbnailTransform = {
+  width: 160,
+  height: 160,
+  quality: 65,
+};
+
 export async function getSignedThumbnailUrl(
   path: string,
   expiresIn = DEFAULT_EXPIRES_SECONDS,

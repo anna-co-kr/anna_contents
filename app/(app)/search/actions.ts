@@ -1,6 +1,10 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import {
+  getSignedThumbnailUrlsBatch,
+  LIST_THUMBNAIL_TRANSFORM,
+} from "@/lib/storage/signed-url";
 
 /**
  * Task 026 (F005) — 태그·키워드 검색.
@@ -25,6 +29,8 @@ export type SearchParams = {
 export type SearchResultCard = {
   id: string;
   thumbnail_url: string | null;
+  /** Storage path → 1h signed URL + 160px transform (서버에서 batch 발급). */
+  signed_thumbnail_url: string | null;
   notes: string | null;
   uploaded_at: string;
   tokens: {
@@ -175,17 +181,30 @@ export async function searchReferences(
           }
         : null;
 
-      return {
+      const card: SearchResultCard = {
         id: row.id,
         thumbnail_url: row.thumbnail_url,
+        signed_thumbnail_url: null,
         notes: row.notes,
         uploaded_at: row.uploaded_at,
         tokens,
         tags: (row.tags ?? []).map((t) => ({ value: t.tag, tag_kind: t.tag_kind })),
         bestPrompt,
       };
+      return card;
     })
     .filter((c): c is SearchResultCard => c !== null);
+
+  // 결과 N개의 thumbnail signed URL을 1번 호출로 batch 발급 + 160px 작은 미리보기 변환.
+  const thumbPaths = cards
+    .map((c) => c.thumbnail_url)
+    .filter((p): p is string => typeof p === "string" && p.length > 0);
+  const signedMap = await getSignedThumbnailUrlsBatch(thumbPaths, {
+    transform: LIST_THUMBNAIL_TRANSFORM,
+  });
+  for (const c of cards) {
+    if (c.thumbnail_url) c.signed_thumbnail_url = signedMap.get(c.thumbnail_url) ?? null;
+  }
 
   return { ok: true, cards, total: cards.length };
 }

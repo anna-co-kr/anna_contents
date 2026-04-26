@@ -7,6 +7,10 @@ import type {
   RemixTool,
   SixDimTokens,
 } from "@/lib/remix/template-engine";
+import {
+  getSignedThumbnailUrlsBatch,
+  LIST_THUMBNAIL_TRANSFORM,
+} from "@/lib/storage/signed-url";
 import { PageGuide } from "@/components/common/page-guide";
 
 /**
@@ -100,6 +104,15 @@ async function RemixComposerLoader() {
       | null;
   };
 
+  // 유효한 토큰 보유 references의 thumbnail signed URL 1번 호출 batch + 160px 변환.
+  // 100개 picker 카드를 시각으로 식별 가능하게 하면서 RTT 1번으로 압축.
+  const thumbPaths = (data ?? [])
+    .map((row) => row.thumbnail_url)
+    .filter((p): p is string => typeof p === "string" && p.length > 0);
+  const signedMap = await getSignedThumbnailUrlsBatch(thumbPaths, {
+    transform: LIST_THUMBNAIL_TRANSFORM,
+  });
+
   const references: RemixComposerReference[] = ((data ?? []) as RawRow[])
     .map((row): RemixComposerReference | null => {
       const tokens = row.reference_tokens?.[0]?.tokens;
@@ -115,6 +128,9 @@ async function RemixComposerLoader() {
       return {
         id: row.id,
         thumbnail_url: row.thumbnail_url,
+        signedThumbnailUrl: row.thumbnail_url
+          ? signedMap.get(row.thumbnail_url) ?? null
+          : null,
         notes: row.notes,
         tokens,
         bestTool,

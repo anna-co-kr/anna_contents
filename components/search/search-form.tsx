@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
+import Image from "next/image";
+import { ImageIcon } from "lucide-react";
 import {
   searchReferences,
   listAllTags,
@@ -263,48 +265,75 @@ export default function SearchForm() {
             {results.map((card) => (
               <li
                 key={card.id}
-                className="rounded-md border bg-card p-3 space-y-2"
+                className="rounded-md border bg-card p-3"
                 data-testid={`search-result-${card.id}`}
               >
-                <div className="flex justify-between items-start gap-2">
+                <div className="flex gap-3">
+                  {/* 좌측 80×80 썸네일 — 검색 결과를 시각으로 빠르게 식별. signed URL+160px 변환본 */}
                   <Link
                     href={`/library/${card.id}`}
-                    className="text-xs underline text-muted-foreground"
                     target="_blank"
+                    className="shrink-0 block relative size-20 overflow-hidden rounded-md border bg-muted"
+                    aria-label="레퍼런스 상세로 이동"
                   >
-                    #{card.id.slice(0, 8)}
+                    {card.signed_thumbnail_url ? (
+                      <Image
+                        src={card.signed_thumbnail_url}
+                        alt={card.notes ?? "레퍼런스 썸네일"}
+                        fill
+                        sizes="80px"
+                        className="object-cover"
+                        unoptimized
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center">
+                        <ImageIcon className="size-5 text-muted-foreground/40" />
+                      </div>
+                    )}
                   </Link>
-                  {card.bestPrompt && (
-                    <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded-chip bg-green-100 text-green-900 dark:bg-green-900/40 dark:text-green-200">
-                      ★{card.bestPrompt.self_rating} · {card.bestPrompt.tool}-{card.bestPrompt.language}
-                    </span>
-                  )}
-                </div>
-                <p className="text-xs leading-relaxed line-clamp-3">
-                  <span className="text-muted-foreground">subject: </span>
-                  {highlightKeyword(card.tokens.subject, keyword)}
-                </p>
-                <p className="text-xs leading-relaxed line-clamp-2">
-                  <span className="text-muted-foreground">style: </span>
-                  {highlightKeyword(card.tokens.style, keyword)}
-                </p>
-                {card.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1">
-                    {card.tags.slice(0, 5).map((t, i) => (
-                      <span
-                        key={`${t.value}-${i}`}
-                        className="px-1.5 py-0.5 rounded-chip border border-border text-[10px] text-muted-foreground"
+
+                  <div className="flex-1 min-w-0 space-y-2">
+                    <div className="flex justify-between items-start gap-2">
+                      <Link
+                        href={`/library/${card.id}`}
+                        className="text-xs underline text-muted-foreground"
+                        target="_blank"
                       >
-                        {t.value}
-                      </span>
-                    ))}
+                        #{card.id.slice(0, 8)}
+                      </Link>
+                      {card.bestPrompt && (
+                        <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded-chip bg-green-100 text-green-900 dark:bg-green-900/40 dark:text-green-200 shrink-0">
+                          ★{card.bestPrompt.self_rating} · {card.bestPrompt.tool}-{card.bestPrompt.language}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs leading-relaxed line-clamp-3">
+                      <span className="text-muted-foreground">subject: </span>
+                      {highlightKeyword(card.tokens.subject, keyword)}
+                    </p>
+                    <p className="text-xs leading-relaxed line-clamp-2">
+                      <span className="text-muted-foreground">style: </span>
+                      {highlightKeyword(card.tokens.style, keyword)}
+                    </p>
+                    {card.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {card.tags.slice(0, 5).map((t, i) => (
+                          <span
+                            key={`${t.value}-${i}`}
+                            className="px-1.5 py-0.5 rounded-chip border border-border text-[10px] text-muted-foreground"
+                          >
+                            {t.value}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    {card.bestPrompt && (
+                      <p className="text-[11px] leading-relaxed text-muted-foreground line-clamp-2 italic">
+                        “{highlightKeyword(card.bestPrompt.prompt_text, keyword)}”
+                      </p>
+                    )}
                   </div>
-                )}
-                {card.bestPrompt && (
-                  <p className="text-[11px] leading-relaxed text-muted-foreground line-clamp-2 italic">
-                    “{highlightKeyword(card.bestPrompt.prompt_text, keyword)}”
-                  </p>
-                )}
+                </div>
               </li>
             ))}
           </ul>
