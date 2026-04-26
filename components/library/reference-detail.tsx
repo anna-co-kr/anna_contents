@@ -18,6 +18,7 @@ import { ReferenceEditDialog } from "@/components/library/reference-edit-dialog"
 import { ManualTokensDialog } from "@/components/library/manual-tokens-dialog";
 import { DeleteReferenceButton } from "@/components/library/delete-reference-button";
 import { SnippetList } from "@/components/library/snippet-list";
+import { PageGuide } from "@/components/common/page-guide";
 
 const TOKEN_COLOR_CLASS: Record<(typeof TOKEN_KEYS)[number], string> = {
   subject: "border-token-subject/40 bg-token-subject/10 text-token-subject",
@@ -70,12 +71,27 @@ export async function ReferenceDetail({ referenceId }: { referenceId: string }) 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <Link
-          href="/library"
-          className="inline-flex items-center gap-1 text-sm text-muted-foreground transition hover:text-foreground"
-        >
-          <ArrowLeft className="size-4" /> 라이브러리로 돌아가기
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/library"
+            className="inline-flex items-center gap-1 text-sm text-muted-foreground transition hover:text-foreground"
+          >
+            <ArrowLeft className="size-4" /> 라이브러리로 돌아가기
+          </Link>
+          <PageGuide
+            title="레퍼런스 상세"
+            intro="한 카드의 6가지 토큰을 자세히 보고, 컴퓨터가 자동 분석한 내용을 내가 직접 정정하는 곳이에요. 정정한 카드는 'manual' 도장이 찍혀 다음에 더 신뢰도 높게 쓰여요."
+            steps={[
+              "왼쪽 큰 이미지 — 원본 출처가 인스타·핀터레스트·유튜브면 우상단 외부 링크 버튼으로 본편을 바로 볼 수 있어요.",
+              "6가지 색깔 칩(피사체·스타일·조명·구도·매체·분위기)이 자동 분석 결과예요.",
+              "'토큰 편집' 버튼으로 자동 분석을 영어 그대로 정정할 수 있어요. 한 글자라도 바꾸면 source가 manual로 승급해요.",
+              "태그를 추가하면 /search 페이지에서 빠르게 찾을 수 있어요.",
+              "이 카드로 만든 프롬프트 스니펫 기록도 아래에서 확인할 수 있어요.",
+            ]}
+            whenToUse="자동 분석이 어색하거나 영상의 motion·shot 정보가 빠졌을 때 직접 채워주세요. 검수 모드에서 '내가 본 진짜 토큰'을 만드는 곳이에요."
+            nextStep="잘 정리된 카드는 /remix 페이지에서 새 그림 만들 때 기준 카드로 골라 쓰세요."
+          />
+        </div>
         <DeleteReferenceButton referenceId={detail.id} />
       </div>
 
