@@ -5,7 +5,11 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { fetchOgMeta, fetchImageAsBlob } from "@/lib/scrape/og-meta";
 import { uploadReferenceThumbnail } from "@/lib/storage/upload";
-import { getSignedThumbnailUrl } from "@/lib/storage/signed-url";
+import {
+  getSignedThumbnailUrl,
+  getSignedThumbnailUrlsBatch,
+  GRID_THUMBNAIL_TRANSFORM,
+} from "@/lib/storage/signed-url";
 import { tokenSchema, type Token, TOKEN_KEYS } from "@/lib/schemas/tokens";
 import {
   promptToolSchema,
@@ -359,44 +363,51 @@ export async function listReferenceCards(
     return { ok: false, error: `카드 조회 실패: ${error.message}` };
   }
 
-  const cards: ReferenceCardData[] = await Promise.all(
-    (data ?? []).map(async (row) => {
-      const activeTokenRow = (row.reference_tokens ?? []).find(
-        (rt: { is_active: boolean; tokens: unknown; source?: string }) => rt.is_active,
-      ) as { is_active: boolean; tokens: unknown; source?: string } | undefined;
-      const tokens = activeTokenRow
-        ? normalizeTokens(activeTokenRow.tokens)
-        : null;
-      const tokenSource = activeTokenRow?.source === "manual"
-        ? "manual"
-        : activeTokenRow?.source === "claude-code"
-          ? "claude-code"
-          : null;
+  // 1번 호출로 N개 thumbnail signed URL을 일괄 발급 + 400px 리사이즈 적용.
+  // 종전 N번 직렬 RTT가 SSR 병목이었음 (276개 기준 5~10초 → 0.5~1초).
+  const thumbnailPaths = (data ?? [])
+    .map((row) => row.thumbnail_url)
+    .filter((p): p is string => typeof p === "string" && p.length > 0);
+  const signedMap = await getSignedThumbnailUrlsBatch(thumbnailPaths, {
+    transform: GRID_THUMBNAIL_TRANSFORM,
+  });
 
-      const signed = row.thumbnail_url
-        ? await getSignedThumbnailUrl(row.thumbnail_url)
+  const cards: ReferenceCardData[] = (data ?? []).map((row) => {
+    const activeTokenRow = (row.reference_tokens ?? []).find(
+      (rt: { is_active: boolean; tokens: unknown; source?: string }) => rt.is_active,
+    ) as { is_active: boolean; tokens: unknown; source?: string } | undefined;
+    const tokens = activeTokenRow
+      ? normalizeTokens(activeTokenRow.tokens)
+      : null;
+    const tokenSource = activeTokenRow?.source === "manual"
+      ? "manual"
+      : activeTokenRow?.source === "claude-code"
+        ? "claude-code"
         : null;
 
-      return {
-        id: row.id,
-        sourceUrl: row.source_url,
-        thumbnailUrl: row.thumbnail_url,
-        signedThumbnailUrl: signed,
-        favoriteScore: row.favorite_score,
-        notes: row.notes,
-        uploadedAt: row.uploaded_at,
-        tokens,
-        tokenSource: tokenSource as ReferenceCardData["tokenSource"],
-        tags: (row.tags ?? []).map(
-          (t: { id: string; tag: string; tag_kind: ReferenceCardData["tags"][number]["kind"] }) => ({
-            id: t.id,
-            label: t.tag,
-            kind: t.tag_kind,
-          }),
-        ),
-      };
-    }),
-  );
+    const signed = row.thumbnail_url
+      ? signedMap.get(row.thumbnail_url) ?? null
+      : null;
+
+    return {
+      id: row.id,
+      sourceUrl: row.source_url,
+      thumbnailUrl: row.thumbnail_url,
+      signedThumbnailUrl: signed,
+      favoriteScore: row.favorite_score,
+      notes: row.notes,
+      uploadedAt: row.uploaded_at,
+      tokens,
+      tokenSource: tokenSource as ReferenceCardData["tokenSource"],
+      tags: (row.tags ?? []).map(
+        (t: { id: string; tag: string; tag_kind: ReferenceCardData["tags"][number]["kind"] }) => ({
+          id: t.id,
+          label: t.tag,
+          kind: t.tag_kind,
+        }),
+      ),
+    };
+  });
 
   return { ok: true, cards, totalCount: count ?? 0 };
 }

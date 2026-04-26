@@ -1,6 +1,9 @@
 import { Suspense } from "react";
 import { listPairs } from "./actions";
-import { getSignedPairResultUrl } from "@/lib/storage/signed-url";
+import {
+  getSignedPairResultUrlsBatch,
+  PAIR_PREVIEW_TRANSFORM,
+} from "@/lib/storage/signed-url";
 import { PairComposer } from "@/components/pairs/pair-composer";
 import { PairList, type PairListRow } from "@/components/pairs/pair-list";
 import { SessionIndicator } from "@/components/pairs/session-indicator";
@@ -59,24 +62,28 @@ async function PairListShell() {
     );
   }
 
-  const rows: PairListRow[] = await Promise.all(
-    result.rows.map(async (r) => ({
-      pairId: r.pairId,
-      promptId: r.promptId,
-      tool: r.tool,
-      language: r.language,
-      promptText: r.promptText,
-      selfRating: r.selfRating,
-      satisfaction: r.satisfaction,
-      isFinalPick: r.isFinalPick,
-      iterationCount: r.iterationCount,
-      createdAt: r.createdAt,
-      resultImageUrl: r.resultImagePath
-        ? await getSignedPairResultUrl(r.resultImagePath)
-        : null,
-      referenceId: r.referenceId,
-    })),
-  );
+  // 1번 호출로 result 이미지 N개 signed URL 일괄 발급 + 320px 리사이즈.
+  const resultPaths = result.rows
+    .map((r) => r.resultImagePath)
+    .filter((p): p is string => typeof p === "string" && p.length > 0);
+  const signedMap = await getSignedPairResultUrlsBatch(resultPaths, {
+    transform: PAIR_PREVIEW_TRANSFORM,
+  });
+
+  const rows: PairListRow[] = result.rows.map((r) => ({
+    pairId: r.pairId,
+    promptId: r.promptId,
+    tool: r.tool,
+    language: r.language,
+    promptText: r.promptText,
+    selfRating: r.selfRating,
+    satisfaction: r.satisfaction,
+    isFinalPick: r.isFinalPick,
+    iterationCount: r.iterationCount,
+    createdAt: r.createdAt,
+    resultImageUrl: r.resultImagePath ? signedMap.get(r.resultImagePath) ?? null : null,
+    referenceId: r.referenceId,
+  }));
 
   return <PairList rows={rows} />;
 }
