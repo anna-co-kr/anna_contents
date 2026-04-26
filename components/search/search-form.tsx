@@ -19,12 +19,36 @@ const LANGS = [
   { value: "ko", label: "KO" },
 ] as const;
 
-const TAG_KIND_LABELS: Record<string, string> = {
-  category: "카테고리",
-  mood: "무드",
-  color: "색감",
-  purpose: "용도",
+const TAG_KIND_META: Record<
+  string,
+  { label: string; helper: string }
+> = {
+  category: {
+    label: "카테고리",
+    helper: "큰 분류 — 예: 패션, 푸드, 인테리어, 인물",
+  },
+  mood: {
+    label: "무드",
+    helper: "분위기 — 예: 따뜻한, 차가운, 모던, 빈티지",
+  },
+  color: {
+    label: "색감",
+    helper: "색 톤 — 예: 파스텔, 모노크롬, 골든아워",
+  },
+  purpose: {
+    label: "용도",
+    helper: "쓰임새 — 예: 인스타 피드, 유튜브 썸네일, 포트폴리오",
+  },
 };
+
+const TAG_KIND_ORDER = ["category", "mood", "color", "purpose"] as const;
+
+/** D10 게이트·테스트 자동화에서 만든 무의미한 태그(gate-tag-{ts}, uuid 등)는 검색 UI에서 숨긴다. */
+function isMeaningfulTag(value: string): boolean {
+  if (/^gate-tag-/i.test(value)) return false;
+  if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)) return false;
+  return true;
+}
 
 type TagOption = { value: string; tag_kind: string; count: number };
 
@@ -81,11 +105,18 @@ export default function SearchForm() {
     setError(null);
   }
 
-  // 태그 그룹화
-  const tagsByKind = allTags.reduce<Record<string, TagOption[]>>((acc, t) => {
-    (acc[t.tag_kind] ??= []).push(t);
-    return acc;
-  }, {});
+  // 태그 그룹화 — 무의미 태그(자동화 잔재) 사전 필터, 4개 kind 고정 순서로 노출
+  const tagsByKind = allTags
+    .filter((t) => isMeaningfulTag(t.value))
+    .reduce<Record<string, TagOption[]>>((acc, t) => {
+      (acc[t.tag_kind] ??= []).push(t);
+      return acc;
+    }, {});
+
+  const totalUsableTags = Object.values(tagsByKind).reduce(
+    (sum, list) => sum + list.length,
+    0,
+  );
 
   return (
     <div className="space-y-4">
@@ -150,37 +181,54 @@ export default function SearchForm() {
           </fieldset>
         </div>
 
-        {/* 태그 */}
-        {Object.keys(tagsByKind).length > 0 && (
-          <div className="space-y-2">
+        {/* 태그 — 4개 kind 고정 순서(category·mood·color·purpose), 도움말 동반, 빈 그룹은 숨김 */}
+        <div className="space-y-2">
+          <div className="space-y-0.5">
             <span className="text-xs text-muted-foreground">
               태그 (선택한 태그를 모두 가진 카드만)
             </span>
-            {Object.entries(tagsByKind).map(([kind, list]) => (
-              <div key={kind} className="space-y-1">
-                <div className="text-[11px] text-muted-foreground">
-                  {TAG_KIND_LABELS[kind] ?? kind}
-                </div>
-                <div className="flex flex-wrap gap-1">
-                  {list.map((t) => (
-                    <button
-                      key={t.value}
-                      type="button"
-                      onClick={() => setSelectedTags(toggle(selectedTags, t.value))}
-                      className={`px-2 py-0.5 rounded-chip border text-xs ${
-                        selectedTags.includes(t.value)
-                          ? "bg-foreground text-background border-foreground"
-                          : "bg-background border-border hover:bg-muted"
-                      }`}
-                    >
-                      {t.value} <span className="text-[10px] opacity-60">{t.count}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ))}
           </div>
-        )}
+
+          {totalUsableTags === 0 ? (
+            <p className="text-xs text-muted-foreground italic">
+              아직 태그가 없어요. 라이브러리에서 카드를 클릭하면 4가지 분류(카테고리·무드·색감·용도)로 태그를 붙일 수 있어요.
+            </p>
+          ) : (
+            TAG_KIND_ORDER.map((kind) => {
+              const list = tagsByKind[kind];
+              if (!list || list.length === 0) return null;
+              const meta = TAG_KIND_META[kind];
+              return (
+                <div key={kind} className="space-y-1">
+                  <div className="flex flex-wrap items-baseline gap-x-2">
+                    <span className="text-[11px] font-medium text-foreground">
+                      {meta.label}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground">
+                      {meta.helper}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-1">
+                    {list.map((t) => (
+                      <button
+                        key={t.value}
+                        type="button"
+                        onClick={() => setSelectedTags(toggle(selectedTags, t.value))}
+                        className={`px-2 py-0.5 rounded-chip border text-xs ${
+                          selectedTags.includes(t.value)
+                            ? "bg-foreground text-background border-foreground"
+                            : "bg-background border-border hover:bg-muted"
+                        }`}
+                      >
+                        {t.value} <span className="text-[10px] opacity-60">{t.count}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
 
         <div className="flex gap-2 pt-1">
           <button

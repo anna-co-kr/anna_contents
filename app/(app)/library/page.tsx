@@ -33,7 +33,7 @@ export default function LibraryPage() {
       <DropZone />
 
       <Suspense fallback={<GridSkeleton />}>
-        <LibraryGrid />
+        <LibraryGrid limit={500} />
       </Suspense>
     </section>
   );
