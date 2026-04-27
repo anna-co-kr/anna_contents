@@ -2,7 +2,14 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ExternalLink, Pin, Sparkles, Star } from "lucide-react";
+import {
+  ArrowRight,
+  ExternalLink,
+  ImageIcon,
+  Pin,
+  Sparkles,
+  Star,
+} from "lucide-react";
 import {
   LANGUAGE_DISPLAY_NAME,
   TOOL_DISPLAY_NAME,
@@ -37,6 +44,10 @@ export type PairListRow = {
   createdAt: string;
   resultImageUrl: string | null;
   referenceId: string | null;
+  /** "이 레퍼런스 → 이런 결과" 시각 식별용 (signed URL + 160px). */
+  referenceThumbnailUrl: string | null;
+  /** hover title용 6차원 토큰 subject. */
+  referenceSubject: string | null;
 };
 
 export type PairListProps = {
@@ -174,14 +185,7 @@ function FilterChipGroup<T extends string | number | boolean>({
 function PairRow({ row }: { row: PairListRow }) {
   return (
     <li className="flex flex-col gap-3 rounded-ref-card border border-border bg-card p-4 sm:flex-row">
-      {row.resultImageUrl && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={row.resultImageUrl}
-          alt=""
-          className="size-24 shrink-0 rounded-md object-cover"
-        />
-      )}
+      <PairImagesPanel row={row} />
       <div className="min-w-0 flex-1 space-y-2">
         <div className="flex flex-wrap items-center gap-2 text-[11px]">
           <span className="rounded-full border border-border bg-muted px-2 py-0.5">
@@ -202,7 +206,11 @@ function PairRow({ row }: { row: PairListRow }) {
             <Link
               href={`/library/${row.referenceId}`}
               className="inline-flex items-center gap-1 rounded-full border border-token-style/40 bg-token-style/10 px-2 py-0.5 text-token-style transition hover:bg-token-style/20"
-              title="이 프롬프트를 가져온 레퍼런스로 이동"
+              title={
+                row.referenceSubject
+                  ? `레퍼런스 → ${row.referenceSubject}`
+                  : "이 프롬프트를 가져온 레퍼런스로 이동"
+              }
             >
               <ExternalLink className="size-3" />
               레퍼런스 #{row.referenceId.slice(0, 8)}
@@ -263,6 +271,76 @@ function RatingPill({
       <Star className="size-3 fill-current" />
       {label} {value}
     </span>
+  );
+}
+
+/**
+ * "이 레퍼런스 → 이런 결과" 시각 흐름을 한 row에 노출.
+ * 레퍼런스 썸네일(64×64) → 화살표 → 결과 썸네일(96×96).
+ * 둘 다 없으면 컴포넌트 자체가 빈 영역 — flex 부모가 빈 칸을 잡지 않도록 null.
+ *
+ * 이미지가 둘 다 신뢰 가능한 signed URL이지만 결과는 page.tsx에서 PAIR_PREVIEW_TRANSFORM(320px·q70)로,
+ * 레퍼런스는 LIST_THUMBNAIL_TRANSFORM(160px·q65)로 transform되어 다운로드 ~수십 KB.
+ *
+ * <Image> 대신 <img> 사용 — Next/Image의 자동 최적화는 Storage signed URL과 호환이 까다로워 unoptimized
+ * 처리하느니 그냥 native img가 더 가볍다 (이미 transform으로 작아진 상태).
+ */
+function PairImagesPanel({ row }: { row: PairListRow }) {
+  const hasRef = !!row.referenceThumbnailUrl;
+  const hasResult = !!row.resultImageUrl;
+  if (!hasRef && !hasResult) return null;
+
+  const refTitle = row.referenceSubject
+    ? `레퍼런스 — ${row.referenceSubject}`
+    : "원본 레퍼런스";
+
+  return (
+    <div className="flex shrink-0 items-center gap-2">
+      {hasRef ? (
+        <Link
+          href={row.referenceId ? `/library/${row.referenceId}` : "#"}
+          title={refTitle}
+          className="block size-16 overflow-hidden rounded-md border border-border bg-muted transition hover:ring-2 hover:ring-token-style/40"
+          aria-label={refTitle}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={row.referenceThumbnailUrl!}
+            alt=""
+            loading="lazy"
+            className="h-full w-full object-cover"
+          />
+        </Link>
+      ) : (
+        <div
+          className="flex size-16 items-center justify-center rounded-md border border-dashed border-border bg-muted/40"
+          title="원본 레퍼런스 없음"
+          aria-hidden
+        >
+          <ImageIcon className="size-4 text-muted-foreground/50" />
+        </div>
+      )}
+
+      <ArrowRight className="size-4 text-muted-foreground/60" aria-hidden />
+
+      {hasResult ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={row.resultImageUrl!}
+          alt="결과 이미지"
+          loading="lazy"
+          className="size-24 rounded-md object-cover"
+        />
+      ) : (
+        <div
+          className="flex size-24 items-center justify-center rounded-md border border-dashed border-border bg-muted/40"
+          aria-hidden
+          title="결과 이미지 미첨부"
+        >
+          <ImageIcon className="size-6 text-muted-foreground/40" />
+        </div>
+      )}
+    </div>
   );
 }
 

@@ -2,6 +2,8 @@ import { Suspense } from "react";
 import { listPairs } from "./actions";
 import {
   getSignedPairResultUrlsBatch,
+  getSignedThumbnailUrlsBatch,
+  LIST_THUMBNAIL_TRANSFORM,
   PAIR_PREVIEW_TRANSFORM,
 } from "@/lib/storage/signed-url";
 import { PairComposer } from "@/components/pairs/pair-composer";
@@ -66,9 +68,19 @@ async function PairListShell() {
   const resultPaths = result.rows
     .map((r) => r.resultImagePath)
     .filter((p): p is string => typeof p === "string" && p.length > 0);
-  const signedMap = await getSignedPairResultUrlsBatch(resultPaths, {
-    transform: PAIR_PREVIEW_TRANSFORM,
-  });
+  const refPaths = Array.from(
+    new Set(
+      result.rows
+        .map((r) => r.referenceThumbnailPath)
+        .filter((p): p is string => typeof p === "string" && p.length > 0),
+    ),
+  );
+
+  // 두 버킷(pair-results, references-thumbnails)을 병렬 batch 발급.
+  const [signedResultMap, signedRefMap] = await Promise.all([
+    getSignedPairResultUrlsBatch(resultPaths, { transform: PAIR_PREVIEW_TRANSFORM }),
+    getSignedThumbnailUrlsBatch(refPaths, { transform: LIST_THUMBNAIL_TRANSFORM }),
+  ]);
 
   const rows: PairListRow[] = result.rows.map((r) => ({
     pairId: r.pairId,
@@ -81,8 +93,12 @@ async function PairListShell() {
     isFinalPick: r.isFinalPick,
     iterationCount: r.iterationCount,
     createdAt: r.createdAt,
-    resultImageUrl: r.resultImagePath ? signedMap.get(r.resultImagePath) ?? null : null,
+    resultImageUrl: r.resultImagePath ? signedResultMap.get(r.resultImagePath) ?? null : null,
     referenceId: r.referenceId,
+    referenceThumbnailUrl: r.referenceThumbnailPath
+      ? signedRefMap.get(r.referenceThumbnailPath) ?? null
+      : null,
+    referenceSubject: r.referenceSubject,
   }));
 
   return <PairList rows={rows} />;

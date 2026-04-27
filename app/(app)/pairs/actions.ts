@@ -338,6 +338,10 @@ export type PairListItem = {
   createdAt: string;
   resultImagePath: string | null;
   referenceId: string | null;
+  /** "이 레퍼런스 → 이런 결과" 시각화용 — references.thumbnail_url storage path */
+  referenceThumbnailPath: string | null;
+  /** hover title 등에 활용할 6차원 토큰 subject */
+  referenceSubject: string | null;
 };
 
 export async function listPairs(opts?: {
@@ -381,16 +385,51 @@ export async function listPairs(opts?: {
   const { data, error } = await dataQuery;
   if (error) return { ok: false, error: `페어 조회 실패: ${error.message}` };
 
-  const rows: PairListItem[] = (data ?? []).map((row) => {
+  // 1차 — pair → prompt → reference_id까지만 추출
+  type RawPrompt = {
+    prompt_text: string;
+    tool: PromptTool;
+    language: PromptLanguage;
+    self_rating: number | null;
+    reference_id: string | null;
+  };
+
+  const referenceIdsSet = new Set<string>();
+  const intermediates = (data ?? []).map((row) => {
     const prompt = (Array.isArray(row.prompts) ? row.prompts[0] : row.prompts) as
-      | {
-          prompt_text: string;
-          tool: PromptTool;
-          language: PromptLanguage;
-          self_rating: number | null;
-          reference_id: string | null;
-        }
+      | RawPrompt
       | null;
+    if (prompt?.reference_id) referenceIdsSet.add(prompt.reference_id);
+    return { row, prompt };
+  });
+
+  // 2차 — 묶인 reference들의 thumbnail_url + 활성 토큰 subject만 한 번에 fetch
+  const refMeta = new Map<
+    string,
+    { thumbnailPath: string | null; subject: string | null }
+  >();
+  const referenceIds = Array.from(referenceIdsSet);
+  if (referenceIds.length > 0) {
+    const { data: refRows } = await ctx.supabase
+      .from("references")
+      .select(
+        `id, thumbnail_url, reference_tokens(tokens, is_active)`,
+      )
+      .in("id", referenceIds);
+    for (const r of refRows ?? []) {
+      const activeToken = (r.reference_tokens ?? []).find(
+        (rt: { is_active: boolean; tokens: unknown }) => rt.is_active,
+      ) as { tokens: { subject?: string } } | undefined;
+      refMeta.set(r.id, {
+        thumbnailPath: r.thumbnail_url ?? null,
+        subject: activeToken?.tokens?.subject ?? null,
+      });
+    }
+  }
+
+  const rows: PairListItem[] = intermediates.map(({ row, prompt }) => {
+    const refId = prompt?.reference_id ?? null;
+    const meta = refId ? refMeta.get(refId) : undefined;
     return {
       pairId: row.id,
       promptId: row.prompt_id,
@@ -404,7 +443,9 @@ export async function listPairs(opts?: {
       sessionId: row.session_id,
       createdAt: row.created_at,
       resultImagePath: row.result_image_url,
-      referenceId: prompt?.reference_id ?? null,
+      referenceId: refId,
+      referenceThumbnailPath: meta?.thumbnailPath ?? null,
+      referenceSubject: meta?.subject ?? null,
     };
   });
 
